@@ -1,185 +1,407 @@
 # Current Status
 
-更新日期：2026-07-28
+更新日期：2026-07-29
 
 ## 專案目前狀態
 
-`mjpeg_yolo_minimal.py` 與 `webrtc_yolo_minimal.py` 目前支援兩種相機來源：
+本輪已完成：
 
-- `opencv`
-- `tiscamera`
+- 建立 Python 3.10.12 `.venv`，由 `uv 0.11.33` 管理
+- 實機確認 The Imaging Source DFK AFU130-L53
+- 實機確認 tiscamera／tcambin 0.14.0 與 GStreamer 1.20.3
+- 完成兩個 minimal 的 V4L2 與 tcambin 雙來源
+- 完成兩個 minimal 共用相機控制 GUI
+- 完成 MJPEG 與 WebRTC 的四組端到端實測
+- 建立 `yolo_final_mjpeg.py`
+- 两个 final 均完成三种相机路径与控制 GUI
+- 建立 `yolo_final_old.py`、`yolo_final_mjpeg_old.py`
+- 建立完整 `README.md`
 
-預設相機來源仍為 `opencv`。
+## 本輪檔案
 
-## 已修改檔案
+已修改：
 
 - `mjpeg_yolo_minimal.py`
 - `webrtc_yolo_minimal.py`
 
-## OpenCV 相機來源
+已新增：
 
-OpenCV 模式使用 `cv2.VideoCapture` 取得影像。
+- `minimal_camera_control.py`
+- `minimal_control_ui.py`
+- `yolo_final_mjpeg.py`
+- `yolo_final_old.py`
+- `yolo_final_mjpeg_old.py`
+- `README.md`
 
-執行方式：
+## Python 環境
 
-```bash
-python3 mjpeg_yolo_minimal.py \
-  --camera-source opencv \
-  --camera-index 0
-```
-
-```bash
-python3 webrtc_yolo_minimal.py \
-  --camera-source opencv \
-  --camera-index 0
-```
-
-`--camera-index` 用來指定 OpenCV 相機裝置索引，預設值為 `0`。
-
-## tiscamera 相機來源
-
-tiscamera 模式的目標環境為：
-
-- Linux
-- tiscamera 0.14.0
-- 相容的 tcamdutils 0.14.0
-- GStreamer 1.0
-- Python GObject introspection bindings
-- NumPy
-
-程式使用以下流程取得影像：
+環境位置：
 
 ```text
-tcambin
-  -> BGRx 1920x1080 30 FPS
+.venv
+```
+
+啟用：
+
+```bash
+source .venv/bin/activate
+```
+
+主要已安裝版本：
+
+- Python 3.10.12
+- OpenCV 5.0.0
+- Ultralytics 8.4.108
+- aiohttp 3.14.3
+- aiortc 1.15.0
+- PyAV 17.1.0
+- pyserial 3.5
+- pynmea2 1.19.0
+
+虛擬環境以 `--system-site-packages` 建立，原因是 Ubuntu 的 PyGObject／
+GStreamer GI bindings 由系統套件提供。`uv` cache 在受限環境中需使用
+可寫位置，例如 `/tmp/uv-cache`。
+
+## 實機與相機能力
+
+相機：
+
+```text
+Model: DFK AFU130-L53
+Serial: 26410280
+USB ID: 199e:8457
+```
+
+軟體：
+
+- Linux 6.8 / Ubuntu 22.04
+- tiscamera／tcambin 0.14.0
+- GStreamer 1.20.3
+- V4L2 `uvcvideo`
+
+已確認格式：
+
+| 解析度 | FPS |
+|---|---|
+| 4128×3096 | 1 |
+| 3264×2448 | 1 |
+| 2592×1944 | 1 |
+| 1920×1080 | 30、25、20、15、10、5 |
+| 1600×1200 | 30、25、20、15、10、5 |
+| 1280×960 | 30、25、20、15、10、5 |
+| 1280×720 | 30、25、20、15、10、5 |
+| 800×480 | 30、25、20、15、10、5 |
+| 640×480 | 30、25、20、15、10、5 |
+
+目前 GUI 提供上述常用格式及 4128×3096。選擇 4128×3096 時強制
+1 FPS；切回其他解析度時若仍是 1 FPS，會恢復 30 FPS。
+
+實際取得的 frame：
+
+```text
+V4L2 4128×3096 @ 1 FPS -> (3096, 4128, 3)
+tcambin 4128×3096 @ 1 FPS -> (3096, 4128, 3)
+V4L2 1280×720 @ 25 FPS -> (720, 1280, 3)
+tcambin 1280×720 @ 25 FPS -> (720, 1280, 3)
+```
+
+## Minimal 相機架構
+
+CLI 保留：
+
+```text
+--camera-source opencv
+--camera-source tiscamera
+```
+
+Linux 的 `opencv` 模式現在由共用控制層明確使用：
+
+```text
+cv2.VideoCapture(index, cv2.CAP_V4L2)
+```
+
+GUI 顯示名稱為 `V4L2`。
+
+tiscamera 模式：
+
+```text
+tcambin name=camera_source
+  -> BGRx
   -> videoconvert
   -> BGR
   -> appsink
   -> NumPy
-  -> OpenCV / YOLO
+  -> YOLO
 ```
 
-GStreamer 本身不是 Linux 專用，但目前使用的
-`tiscamera 0.14.0 + tcambin` 相機路徑限制在 Linux。
+`tcambin` 需載入 `Gst 1.0` 及 `Tcam 0.1` GI namespace，否則 Python
+物件不會出現 `get_tcam_property_names()` 與
+`set_tcam_property()`。
 
-程式不依賴 OpenCV 的 GStreamer backend，而是透過 PyGObject
-直接使用 GStreamer，取得影像後再轉成 NumPy BGR 陣列。
+## 相機控制 GUI
 
-### 使用第一台 tiscamera 相機
+兩個 minimal 共用 `minimal_camera_control.py` 與
+`minimal_control_ui.py`。
 
-```bash
-python3 mjpeg_yolo_minimal.py --camera-source tiscamera
+控制項：
+
+- 來源：V4L2、tiscamera／tcambin
+- 解析度
+- FPS
+- 曝光時間
+- 亮度
+- ATR 對比
+- 飽和度
+- 增益
+- 銳利度
+- One Push Focus
+
+各數值控制都有獨立的「預設」與「套用」：
+
+| 控制 | 預設值 |
+|---|---:|
+| 解析度 | 1920×1080 |
+| FPS | 30 |
+| 曝光時間 | 33333 µs |
+| 亮度 | 0 |
+| ATR 對比 | 64 |
+| 飽和度 | 32 |
+| 增益 | 100 |
+| 銳利度 | 8 |
+
+「預設」只填欄位，不送出設定；必須再按「套用」。
+
+面板：
+
+- 固定在網頁右側
+- 預設關閉
+- 以 `transform: translateX(100%)` 收合到視窗右側之外
+- 保留箭頭按鈕開關
+- 透明度 0.6
+- 欄位可縮小，窄螢幕自動換行
+
+## 控制映射與實測
+
+| GUI | V4L2 | tiscamera |
+|---|---|---|
+| 曝光 | `exposure_time_us` | `Exposure Time (us)` |
+| 亮度 | `brightness` | `Brightness` |
+| 對比 | `atr_contrast` | `ATR Contrast` |
+| 飽和度 | `saturation` | `Saturation` |
+| 增益 | `gain` | `Gain` |
+| 銳利度 | `sharpness` | `Sharpness` |
+| One Push Focus | `auto_focus_one_push` | `Focus One Push` |
+
+已在兩套來源逐項寫入並讀回。亮度另做了可觀察的
+`0 → 1 → 0` 測試，兩套來源均讀回正確。測試後已恢復亮度 0、
+自動曝光與自動增益。
+
+注意：
+
+- 手動設定曝光會關閉 `auto_shutter`／`Exposure Auto`
+- 手動設定增益會關閉 `gain_auto`／`Gain Auto`
+- One Push Focus 是一次性動作，沒有完成狀態可讀，只能確認命令被接受
+- 屬性讀回一致不代表肉眼一定能看到明顯差異
+
+## 來源與格式切換
+
+`CameraManager` 使用 reentrant lock 序列化：
+
+- camera read
+- V4L2／tcambin 切換
+- 解析度與 FPS pipeline 重建
+- 控制寫入與讀回
+
+已實測執行中：
+
+```text
+V4L2 -> tiscamera -> V4L2
 ```
 
-```bash
-python3 webrtc_yolo_minimal.py --camera-source tiscamera
+切換後均能繼續取像。解析度與 FPS 會關閉目前來源、建立新來源；若建立
+失敗，會嘗試恢復原來源。
+
+tcambin `try-pull-sample` 的等待上限目前為 5 秒。這是最大等待時間；
+正常取得 frame 時會立即返回。
+
+## 串流驗證
+
+四組均已通過：
+
+| 程式 | V4L2 | tiscamera |
+|---|---:|---:|
+| `mjpeg_yolo_minimal.py` | 通過 | 通過 |
+| `webrtc_yolo_minimal.py` | 通過 | 通過 |
+
+MJPEG：
+
+- `/` HTTP 200
+- `/video_feed` HTTP 200
+- 實際收到 multipart MJPEG frame
+- 1920×1080 的 25 秒測試曾接收約 315 MB
+- 同一 HTTP response 中切換 1920×1080 → 1280×720 → 1920×1080，
+  三階段都繼續收到 frame
+
+WebRTC：
+
+- `/offer` HTTP 200
+- aiortc offer/answer 成功
+- V4L2 與 tiscamera 均實際收到 1920×1080 frame
+
+## MJPEG 暫時斷幀恢復
+
+原始 `mjpeg_yolo_minimal.py` 在 `camera.read()` 暫時失敗時會
+`break`，導致 `/video_feed` response 永久結束，必須重整網頁。
+
+已改為：
+
+- 暫時失敗時保留 generator 與 HTTP response
+- 每 0.1 秒重試
+- 相機恢復後繼續從同一 response 傳送
+- HTTP 真正中斷時，瀏覽器每 1 秒自動重連 `/video_feed`
+
+此设计已移植到 `yolo_final_mjpeg.py`。
+
+## WebRTC 現況與痛點
+
+aiortc 自動化客戶端的四組測試均成功，但實際瀏覽器曾出現
+`WebRTC: failed`。
+
+已確認當時：
+
+- 只有使用者從 VS Code terminal 啟動的一個 WebRTC 程序
+- 程序正常持有 `/dev/video0`
+- 正常監聽 8080
+- 不是先前測試殘留的孤兒程序
+
+使用注意：
+
+- 瀏覽器使用 `http://localhost:8080` 或 `http://127.0.0.1:8080`
+- 不要瀏覽 `http://0.0.0.0:8080`
+- localhost 只接收 WebRTC 不需要 HTTPS
+- LAN IP、跨網段、NAT、UDP 防火牆和 ICE candidate 都可能影響連線
+- 目前沒有 STUN/TURN
+- 多次重新整理可能留下舊 peer connection
+- 前端尚未在 `pagehide`／`beforeunload` 主動 `peer.close()`
+- 後端 cleanup 目前只處理 `failed`／`closed`，應考慮
+  `disconnected`
+
+前端 `pagehide` 目前已主动 `peer.close()`，后端也会处理
+`disconnected`；STUN/TURN 与实际浏览器网络环境仍需继续验证。
+
+## `yolo_final_mjpeg.py`
+
+已建立 MJPEG 版本，保留：
+
+- `yolo_final.py` 的相機來源
+- YOLO TensorRT 推論
+- GPS 定位
+- 連續幀確認
+
+並將 WebRTC transport 替換為 Flask multipart MJPEG。
+
+目前它透過 import 重用 `yolo_final.py` 的 YOLO/GPS 核心類別，並已整合：
+
+- OpenCV/V4L2
+- GStreamer/v4l2src
+- GStreamer/tcambin
+- minimal 共用相機控制層
+- 右側控制 GUI
+- MJPEG 暫時斷幀重試與瀏覽器重連
+
+## Final 三路徑實測
+
+測試模型：
+
+```text
+yolo11s.pt
 ```
 
-### 使用指定序號的相機
+正式預設仍為：
 
-```bash
-python3 mjpeg_yolo_minimal.py \
-  --camera-source tiscamera \
-  --tiscamera-serial 12345678
+```text
+model/11s_car_960.engine
 ```
 
-```bash
-python3 webrtc_yolo_minimal.py \
-  --camera-source tiscamera \
-  --tiscamera-serial 12345678
+可用 `--model-path` 覆寫，不需修改程式。
+
+六組結果：
+
+| Final | OpenCV/V4L2 | GStreamer/v4l2src | GStreamer/tcambin |
+|---|---:|---:|---:|
+| WebRTC `yolo_final.py` | 通過 | 通過 | 通過 |
+| MJPEG `yolo_final_mjpeg.py` | 通過 | 通過 | 通過 |
+
+验证标准：
+
+- GUI 含三种来源
+- `/api/camera` 回报正确来源
+- MJPEG 实际收到多个 multipart frame
+- WebRTC offer/answer HTTP 200
+- WebRTC 实际收到 1280×720 frame
+- 使用 yolo11s.pt 完成推论
+- tcambin 最终复测可正常关闭，无 core dump
+
+相机的 V4L2 能力只公开 YUYV，没有 MJPEG，因此新版
+GStreamer/v4l2src 使用：
+
+```text
+v4l2src
+  -> video/x-raw,format=YUY2
+  -> videoconvert
+  -> BGR
+  -> appsink
 ```
 
-在 tiscamera 模式下，`--camera-index` 不會使用；相機應透過
-`--tiscamera-serial` 選擇。不指定序號時，由 `tcambin` 選擇第一台相機。
+旧 `image/jpeg -> jpegdec/nvjpegdec` 不适用于目前 DFK AFU130-L53。
+`--jpeg-decoder` 暂时仅为 CLI 相容保留。
 
-## 影像設定
+## Final 舊版備份
 
-目前兩種來源都以以下格式為目標：
+- `yolo_final_old.py`：由 Git 基线精确还原
+- `yolo_final_mjpeg_old.py`：还原旧 MJPEG 架构并引用
+  `yolo_final_old.py`
 
-- 寬度：1920
-- 高度：1080
-- 幀率：30 FPS
-- YOLO 模型：`yolo11s.pt`
+## 已移植到兩個 `yolo_final` 的項目
 
-實際可用的解析度、幀率和像素格式仍取決於相機型號與驅動支援。
+本轮实际一起移植：
 
-## 已完成驗證
+1. `CameraManager` 鎖與來源生命週期
+2. V4L2 與 tcambin 的控制映射
+3. `Tcam 0.1` GI namespace 初始化
+4. 解析度／FPS 重建及失敗回復
+5. 4128×3096 與 1 FPS 綁定
+6. 手動曝光／增益與自動模式的相依性
+7. One Push Focus 的 action 語意
+8. MJPEG generator 不可因暫時斷幀而結束
+9. WebRTC 切換格式時應持續提供最新 frame 或明確等待
+10. WebRTC peer 的前後端 cleanup
+11. STUN/TURN、UDP firewall 與實際瀏覽器 ICE 測試
+12. 高解析度 frame 的 YOLO、JPEG／WebRTC 編碼效能與記憶體壓力
 
-由於目前開發環境沒有 Linux 和 tiscamera 相機，現階段只完成靜態驗證：
+## 已知執行痛點
 
-- 兩個 Python 檔案皆通過 AST 語法解析
-- `--camera-source` 接受 `opencv` 和 `tiscamera`
-- `--tiscamera-serial` 已加入兩個程式
-- 兩個程式會產生相同的 `tcambin` GStreamer 管線
-- 已檢查有指定和未指定相機序號的管線內容
-
-## 尚未完成驗證
-
-以下項目需要在 Linux 實機上驗證：
-
-- tiscamera 0.14.0 是否正確安裝
-- `tcambin` 是否可由 GStreamer 找到
-- tcamdutils 0.14.0 是否可由 `tcambin` 使用
-- PyGObject 是否能載入 `Gst 1.0`
-- 相機是否支援 1920x1080、30 FPS、BGRx 輸出
-- 未指定序號時是否正確開啟第一台相機
-- 指定序號時是否正確選擇相機
-- MJPEG 串流是否正常
-- WebRTC 串流是否正常
-- YOLO 推論效能是否能維持需求幀率
-- 程式結束時 GStreamer pipeline 是否正常釋放
-
-## Linux 實機建議檢查
-
-確認 tiscamera 元件：
-
-```bash
-gst-inspect-1.0 tcambin
-```
-
-確認相機能透過 GStreamer 取像：
-
-```bash
-gst-launch-1.0 \
-  tcambin \
-  ! video/x-raw,format=BGRx,width=1920,height=1080,framerate=30/1 \
-  ! videoconvert \
-  ! autovideosink
-```
-
-如果需要指定序號：
-
-```bash
-gst-launch-1.0 \
-  tcambin serial="12345678" \
-  ! video/x-raw,format=BGRx,width=1920,height=1080,framerate=30/1 \
-  ! videoconvert \
-  ! autovideosink
-```
-
-確認 Python GStreamer bindings：
-
-```bash
-python3 -c \
-  'import gi; gi.require_version("Gst", "1.0"); from gi.repository import Gst; print("GStreamer Python OK")'
-```
-
-## 已知風險
-
-1. 相機可能不支援目前指定的 1920x1080、30 FPS 或 BGRx 格式。
-2. tcamdutils 未安裝或版本不相容時，BGRx 轉換可能失敗。
-3. Linux Python 虛擬環境可能找不到系統安裝的 `gi`。
-4. tiscamera 0.14.0 屬於舊版本，系統 GStreamer 或作業系統版本可能造成相容性問題。
-5. 目前尚未取得 GStreamer bus error 的詳細訊息；首次實機測試後可能需要補強錯誤輸出。
-6. WebRTC 與 YOLO 同時執行時，實際效能需要依硬體重新評估。
+1. `uv` 預設 cache 路徑在受限環境可能不可寫，需指定
+   `UV_CACHE_DIR=/tmp/uv-cache`。
+2. PyGObject 通常不是純 pip 套件，venv 需看到系統 site packages。
+3. Ultralytics/PyTorch 安裝量大，可能下載數 GB CUDA runtime。
+4. tiscamera 0.14.0 較舊，GI 與新系統相容性需持續注意。
+5. 在受限 sandbox 執行 tcambin 會因 libusb 權限失敗，實機測試需直接
+   存取 USB／`/dev/video0`。
+6. 同一時間通常只能有一個程序持有相機。
+7. tcambin pipeline 重建的首幀可能延遲，不能把單次 timeout 當永久故障。
+8. 4128×3096 的 1 FPS 會放大首幀延遲、推論時間及記憶體需求。
+9. MJPEG 1920×1080 頻寬非常高，不適合低頻寬鏈路。
+10. WebRTC 自動客戶端成功不代表所有瀏覽器與網路環境都成功。
+11. 相機控制值可讀回不等於畫面效果已被量測驗證。
+12. 強制中止 GStreamer/WebRTC 過程曾出現 native termination 訊息，
+    正式版本需強化 thread join 與 pipeline shutdown 順序。
 
 ## 下一步
 
-取得 Linux 與相機環境後，依序進行：
-
-1. 使用 `gst-inspect-1.0 tcambin` 確認插件。
-2. 使用 `gst-launch-1.0` 單獨測試相機取像。
-3. 測試 `mjpeg_yolo_minimal.py` 的 tiscamera 模式。
-4. 測試 `webrtc_yolo_minimal.py` 的 tiscamera 模式。
-5. 記錄實際相機支援的解析度、幀率及像素格式。
-6. 根據實機結果調整 GStreamer pipeline 和錯誤處理。
+1. 修正 WebRTC 前端與後端 peer cleanup。
+2. 以 Chrome／Firefox 實際觀察 ICE candidate 與 browser console。
+3. 評估是否加入 STUN/TURN 設定。
+4. 使用 TensorRT engine 重測兩個 final 的六組路徑。
+5. 在 GPS 真實輸入與完整目標流程同時運作時重測所有格式。
+6. 評估 4128×3096 是否應先縮放再進 YOLO，以控制延遲與記憶體。

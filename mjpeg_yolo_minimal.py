@@ -15,12 +15,15 @@ and the Python GObject introspection bindings.
 
 import argparse
 import sys
+import time
 
 import cv2
 import numpy as np
-from flask import Flask, Response, render_template_string
+from flask import Flask, Response, jsonify, request
 from ultralytics import YOLO
 
+from minimal_camera_control import CameraControlError, CameraManager
+from minimal_control_ui import build_page
 
 MODEL_PATH = "yolo11s.pt"
 CAMERA_SOURCE = "opencv"
@@ -32,6 +35,26 @@ CAMERA_FPS = 30
 
 HTTP_HOST = "0.0.0.0"
 HTTP_PORT = 5000
+
+MJPEG_RECONNECT_SCRIPT = """
+const streamImage = document.getElementById("mjpeg-stream");
+const streamStatus = document.getElementById("connection-status");
+let reconnectTimer = null;
+
+function reconnectMjpeg() {
+  streamStatus.textContent = "MJPEG：重新連線中…";
+  clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(() => {
+    streamImage.src = "/video_feed?retry=" + Date.now();
+  }, 1000);
+}
+
+streamImage.addEventListener("load", () => {
+  streamStatus.textContent = "MJPEG：串流中";
+});
+streamImage.addEventListener("error", reconnectMjpeg);
+streamStatus.textContent = "MJPEG：等待影像…";
+"""
 
 
 class OpenCVCameraSource:
@@ -147,16 +170,25 @@ camera = None
 
 
 def create_camera(camera_source, camera_index, tiscamera_serial):
-    if camera_source == "tiscamera":
-        return TiscameraCameraSource(tiscamera_serial)
-    return OpenCVCameraSource(camera_index)
+    return CameraManager(
+        camera_source,
+        camera_index,
+        tiscamera_serial,
+        CAMERA_WIDTH,
+        CAMERA_HEIGHT,
+        CAMERA_FPS,
+    )
 
 
 def gen_frames():
     while True:
         success, frame = camera.read()
         if not success:
-            break
+            # Format/source changes can temporarily interrupt capture.  Keep
+            # this multipart response alive so the browser resumes without a
+            # manual page refresh when frames become available again.
+            time.sleep(0.1)
+            continue
 
         results = model(frame, verbose=False)
         annotated_frame = results[0].plot()
@@ -175,22 +207,10 @@ def gen_frames():
 
 @app.route("/")
 def index():
-    return render_template_string(
-        """
-        <html>
-          <head>
-            <title>UAV Video Stream</title>
-            <style>
-                body { background-color: #333; color: white; text-align: center; font-family: Arial; }
-                img { max-width: 100%; height: auto; border: 2px solid #fff; margin-top: 20px; }
-            </style>
-          </head>
-          <body>
-            <h1>UAV YOLO MJPEG Stream</h1>
-            <img src="{{ url_for('video_feed') }}">
-          </body>
-        </html>
-        """
+    return build_page(
+        "UAV YOLO MJPEG Stream",
+        '<img id="mjpeg-stream" src="/video_feed" alt="MJPEG stream">',
+        MJPEG_RECONNECT_SCRIPT,
     )
 
 
@@ -199,6 +219,23 @@ def video_feed():
     return Response(
         gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame"
     )
+
+
+@app.get("/api/camera")
+def camera_status():
+    try:
+        return jsonify(camera.status())
+    except Exception as exc:
+        return jsonify(error=str(exc)), 500
+
+
+@app.post("/api/camera/control")
+def camera_control():
+    params = request.get_json(silent=True) or {}
+    try:
+        return jsonify(camera.apply(params.get("name"), params.get("value")))
+    except (CameraControlError, TypeError, ValueError) as exc:
+        return jsonify(error=str(exc)), 400
 
 
 def parse_args():

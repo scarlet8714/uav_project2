@@ -24,8 +24,6 @@ from av import VideoFrame
 from ultralytics import YOLO
 
 from gps_geolocation import GPSReader, estimate_target_gps_from_reader
-from minimal_camera_control import CameraControlError, CameraManager
-from minimal_control_ui import build_page
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +34,6 @@ from minimal_control_ui import build_page
 CAMERA_BACKEND = "gstreamer"
 CAMERA_INDEX = 0
 GSTREAMER_DEVICE = "/dev/video0"
-TISCAMERA_SERIAL = ""
 
 CAMERA_WIDTH = 1280
 CAMERA_HEIGHT = 720
@@ -135,58 +132,6 @@ HTML = """<!doctype html>
 </body>
 </html>
 """
-
-FINAL_WEBRTC_SCRIPT = """
-const statusElement = document.getElementById("connection-status");
-statusElement.textContent = "WebRTC: connecting";
-const peer = new RTCPeerConnection();
-peer.addTransceiver("video", { direction: "recvonly" });
-peer.ontrack = event => {
-  document.getElementById("video").srcObject = event.streams[0];
-};
-peer.onconnectionstatechange = () => {
-  statusElement.textContent = "WebRTC: " + peer.connectionState;
-};
-async function startWebRTC() {
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription(offer);
-  await new Promise(resolve => {
-    if (peer.iceGatheringState === "complete") return resolve();
-    const checkState = () => {
-      if (peer.iceGatheringState === "complete") {
-        peer.removeEventListener("icegatheringstatechange", checkState);
-        resolve();
-      }
-    };
-    peer.addEventListener("icegatheringstatechange", checkState);
-  });
-  const response = await fetch("/offer", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sdp: peer.localDescription.sdp,
-      type: peer.localDescription.type
-    })
-  });
-  if (!response.ok) throw new Error(await response.text());
-  await peer.setRemoteDescription(await response.json());
-}
-window.addEventListener("pagehide", () => peer.close());
-startWebRTC().catch(error => {
-  statusElement.textContent = "WebRTC error: " + error.message;
-});
-"""
-
-HTML = build_page(
-    "YOLO GPS WebRTC stream",
-    '<video id="video" autoplay playsinline muted></video>',
-    FINAL_WEBRTC_SCRIPT,
-    source_options=(
-        ("v4l2", "OpenCV / V4L2"),
-        ("gstreamer", "GStreamer / v4l2src"),
-        ("tiscamera", "GStreamer / tcambin"),
-    ),
-)
 
 
 # ---------------------------------------------------------------------------
@@ -370,16 +315,13 @@ class LatestFrameCamera:
 
 
 def create_camera(settings):
-    manager = CameraManager(
-        settings.camera_backend,
-        settings.camera_index,
-        settings.tiscamera_serial,
-        CAMERA_WIDTH,
-        CAMERA_HEIGHT,
-        CAMERA_FPS,
-        gstreamer_device=settings.gstreamer_device,
-    )
-    return manager, LatestFrameCamera(manager)
+    if settings.camera_backend == "opencv":
+        source = OpenCVCamera(settings.camera_index)
+    else:
+        source = GStreamerCamera(
+            settings.gstreamer_device, settings.jpeg_decoder
+        )
+    return LatestFrameCamera(source)
 
 
 # ---------------------------------------------------------------------------
@@ -448,9 +390,9 @@ class YoloGpsProcessor:
     """Runs one inference pipeline and stores only its latest result."""
 
     def __init__(self, settings):
-        print(f"[YOLO] Loading model: {settings.model_path}")
-        self.model = YOLO(settings.model_path, task="detect")
-        self.camera_manager, self.camera = create_camera(settings)
+        print(f"[YOLO] Loading model: {MODEL_PATH}")
+        self.model = YOLO(MODEL_PATH, task="detect")
+        self.camera = create_camera(settings)
         self.gps = GPSReader(port=GPS_PORT, baudrate=GPS_BAUDRATE)
         self.tracker = TargetTracker()
         self.frame = None
@@ -569,7 +511,7 @@ class YoloGpsProcessor:
     def close(self):
         self.running = False
         self.camera.close()
-        self.thread.join()
+        self.thread.join(timeout=3.0)
         self.gps.stop()
 
 
@@ -637,27 +579,6 @@ async def offer(request):
     })
 
 
-async def camera_status(_request):
-    try:
-        result = await asyncio.to_thread(processor.camera_manager.status)
-        return web.json_response(result)
-    except Exception as exc:
-        return web.json_response({"error": str(exc)}, status=500)
-
-
-async def camera_control(request):
-    params = await request.json()
-    try:
-        result = await asyncio.to_thread(
-            processor.camera_manager.apply,
-            params.get("name"),
-            params.get("value"),
-        )
-        return web.json_response(result)
-    except (CameraControlError, TypeError, ValueError) as exc:
-        return web.json_response({"error": str(exc)}, status=400)
-
-
 async def on_startup(_app):
     global processor
     processor = YoloGpsProcessor(settings)
@@ -673,8 +594,6 @@ async def on_shutdown(_app):
 app = web.Application()
 app.router.add_get("/", index)
 app.router.add_post("/offer", offer)
-app.router.add_get("/api/camera", camera_status)
-app.router.add_post("/api/camera/control", camera_control)
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
@@ -684,8 +603,7 @@ def parse_args():
         description="YOLO GPS video streaming over WebRTC"
     )
     parser.add_argument(
-        "--camera-backend",
-        choices=("opencv", "gstreamer", "tiscamera"),
+        "--camera-backend", choices=("opencv", "gstreamer"),
         default=CAMERA_BACKEND,
     )
     parser.add_argument("--camera-index", type=int, default=CAMERA_INDEX)
@@ -695,20 +613,6 @@ def parse_args():
     parser.add_argument(
         "--jpeg-decoder", choices=("jpegdec", "nvjpegdec"),
         default=GSTREAMER_JPEG_DECODER,
-        help=(
-            "legacy JPEG pipeline option; the current DFK AFU130-L53 "
-            "v4l2src path uses raw YUY2"
-        ),
-    )
-    parser.add_argument(
-        "--tiscamera-serial",
-        default=TISCAMERA_SERIAL,
-        help="tiscamera serial; empty selects the first camera",
-    )
-    parser.add_argument(
-        "--model-path",
-        default=MODEL_PATH,
-        help="YOLO .engine or .pt model path (default: %(default)s)",
     )
     return parser.parse_args()
 

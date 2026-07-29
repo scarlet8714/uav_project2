@@ -28,6 +28,8 @@ from aiortc import RTCPeerConnection, RTCSessionDescription, VideoStreamTrack
 from av import VideoFrame
 from ultralytics import YOLO
 
+from minimal_camera_control import CameraControlError, CameraManager
+from minimal_control_ui import build_page
 
 # Only change this value to use another YOLO model.
 MODEL_PATH = "yolo11s.pt"
@@ -109,6 +111,52 @@ HTML = """<!doctype html>
 </body>
 </html>
 """
+
+WEBRTC_SCRIPT = """
+const statusElement = document.getElementById("connection-status");
+statusElement.textContent = "WebRTC: connecting";
+const peer = new RTCPeerConnection();
+peer.addTransceiver("video", { direction: "recvonly" });
+peer.ontrack = event => {
+  document.getElementById("video").srcObject = event.streams[0];
+};
+peer.onconnectionstatechange = () => {
+  statusElement.textContent = "WebRTC: " + peer.connectionState;
+};
+async function startWebRTC() {
+  const offer = await peer.createOffer();
+  await peer.setLocalDescription(offer);
+  await new Promise(resolve => {
+    if (peer.iceGatheringState === "complete") return resolve();
+    const checkState = () => {
+      if (peer.iceGatheringState === "complete") {
+        peer.removeEventListener("icegatheringstatechange", checkState);
+        resolve();
+      }
+    };
+    peer.addEventListener("icegatheringstatechange", checkState);
+  });
+  const response = await fetch("/offer", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sdp: peer.localDescription.sdp,
+      type: peer.localDescription.type
+    })
+  });
+  if (!response.ok) throw new Error(await response.text());
+  await peer.setRemoteDescription(await response.json());
+}
+startWebRTC().catch(error => {
+  statusElement.textContent = "WebRTC error: " + error.message;
+});
+"""
+
+HTML = build_page(
+    "UAV YOLO WebRTC Stream",
+    '<video id="video" autoplay playsinline muted></video>',
+    WEBRTC_SCRIPT,
+)
 
 
 class OpenCVCameraSource:
@@ -246,10 +294,14 @@ class YoloCamera:
     def __init__(self, camera_source, camera_index, tiscamera_serial):
         print(f"Loading YOLO model: {MODEL_PATH}")
         self.model = YOLO(MODEL_PATH)
-        if camera_source == "tiscamera":
-            self.source = TiscameraCameraSource(tiscamera_serial)
-        else:
-            self.source = OpenCVCameraSource(camera_index)
+        self.source = CameraManager(
+            camera_source,
+            camera_index,
+            tiscamera_serial,
+            CAMERA_WIDTH,
+            CAMERA_HEIGHT,
+            CAMERA_FPS,
+        )
 
         self.frame = None
         self.lock = threading.Lock()
@@ -352,6 +404,24 @@ async def offer(request):
     )
 
 
+async def camera_status(_request):
+    try:
+        return web.json_response(await asyncio.to_thread(camera.source.status))
+    except Exception as exc:
+        return web.json_response({"error": str(exc)}, status=500)
+
+
+async def camera_control(request):
+    params = await request.json()
+    try:
+        result = await asyncio.to_thread(
+            camera.source.apply, params.get("name"), params.get("value")
+        )
+        return web.json_response(result)
+    except (CameraControlError, TypeError, ValueError) as exc:
+        return web.json_response({"error": str(exc)}, status=400)
+
+
 async def on_startup(_app):
     global camera
     camera = YoloCamera(
@@ -371,6 +441,8 @@ async def on_shutdown(_app):
 app = web.Application()
 app.router.add_get("/", index)
 app.router.add_post("/offer", offer)
+app.router.add_get("/api/camera", camera_status)
+app.router.add_post("/api/camera/control", camera_control)
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 
