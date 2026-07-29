@@ -25,7 +25,7 @@ from ultralytics import YOLO
 from minimal_camera_control import CameraControlError, CameraManager
 from minimal_control_ui import build_page
 
-MODEL_PATH = "yolo11s.pt"
+MODEL_PATH = "yolo11n.engine"
 CAMERA_SOURCE = "opencv"
 CAMERA_INDEX = 0
 TISCAMERA_SERIAL = ""

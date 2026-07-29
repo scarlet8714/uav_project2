@@ -333,14 +333,14 @@ class TiscameraCameraSource:
         return result[1]
 
     def supports_focus_one_push(self):
-        return "Focus One Push" in self.source.get_tcam_property_names()
+        return "Auto Focus One Push" in self.source.get_tcam_property_names()
 
     def focus_one_push(self):
         if not self.supports_focus_one_push():
             raise CameraControlError(
                 "tiscamera one-push focus is not supported"
             )
-        if not self.source.set_tcam_property("Focus One Push", True):
+        if not self.source.set_tcam_property("Auto Focus One Push", True):
             raise CameraControlError(
                 "tiscamera rejected the one-push focus trigger"
             )

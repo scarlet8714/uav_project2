@@ -4,6 +4,22 @@
 
 ## 專案目前狀態
 
+目前工作平台：
+
+- NVIDIA Jetson Orin NX Engineering Reference Developer Kit
+- aarch64
+- Jetson Linux R36.5.0（Linux 5.15 tegra）
+
+本文件保留先前環境的既有實測狀態；下列舊結果除非明確標示 Jetson
+Orin，否則不視為已在 Orin 上重新驗證。
+
+本次 Jetson Orin 更新：
+
+- 新增根目錄 TensorRT engine：`yolo11n.engine`、`11s_car_960.engine`
+- `mjpeg_yolo_minimal.py` 的預設模型改為 `yolo11n.engine`
+- tcambin 的 One Push Focus 屬性名稱修正為
+  `Auto Focus One Push`
+
 本輪已完成：
 
 - 建立 Python 3.10.12 `.venv`，由 `uv 0.11.33` 管理
@@ -63,6 +79,9 @@ GStreamer GI bindings 由系統套件提供。`uv` cache 在受限環境中需�
 可寫位置，例如 `/tmp/uv-cache`。
 
 ## 實機與相機能力
+
+> 本節為先前實機驗證紀錄，暫時保留原始軟硬體版本與測試結果，尚未
+> 全部在目前的 Jetson Orin NX 上重跑。
 
 相機：
 
@@ -190,7 +209,7 @@ tcambin name=camera_source
 | 飽和度 | `saturation` | `Saturation` |
 | 增益 | `gain` | `Gain` |
 | 銳利度 | `sharpness` | `Sharpness` |
-| One Push Focus | `auto_focus_one_push` | `Focus One Push` |
+| One Push Focus | `auto_focus_one_push` | `Auto Focus One Push` |
 
 已在兩套來源逐項寫入並讀回。亮度另做了可觀察的
 `0 → 1 → 0` 測試，兩套來源均讀回正確。測試後已恢復亮度 0、

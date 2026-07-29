@@ -32,7 +32,7 @@ from minimal_camera_control import CameraControlError, CameraManager
 from minimal_control_ui import build_page
 
 # Only change this value to use another YOLO model.
-MODEL_PATH = "yolo11s.pt"
+MODEL_PATH = "yolo11s.engine"
 
 CAMERA_INDEX = 0
 CAMERA_SOURCE = "opencv"

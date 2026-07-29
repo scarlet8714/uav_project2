@@ -5,8 +5,12 @@
 
 ## 環境
 
-目前已在 Ubuntu 22.04、Python 3.10.12、The Imaging Source
-DFK AFU130-L53 上驗證。專案虛擬環境由 `uv` 建立：
+目前開發／執行平台為 **NVIDIA Jetson Orin NX Engineering Reference
+Developer Kit**（aarch64、Jetson Linux R36.5.0／Linux 5.15 tegra）。
+先前在 Ubuntu 22.04、Python 3.10.12、The Imaging Source
+DFK AFU130-L53 上完成的驗證結果仍保留；除非另有註記，文件中的既有
+實測狀態不代表已全部在 Jetson Orin 上重新測過。專案虛擬環境由 `uv`
+建立：
 
 ```bash
 source .venv/bin/activate
@@ -233,6 +237,10 @@ http://127.0.0.1:8080
 
 最小化 MJPEG 實驗，可從 CLI 選擇 V4L2/OpenCV 或 tcambin：
 
+目前 Jetson Orin 上的預設模型為根目錄的 `yolo11n.engine`。
+TensorRT engine 與硬體、JetPack／TensorRT 版本密切相關，不建議直接
+搬到不同平台使用。
+
 ```bash
 python mjpeg_yolo_minimal.py \
   --camera-source opencv \
@@ -356,7 +364,8 @@ http://localhost:8080
 
 兩個 minimal 的目的則是隔離並驗證相機與串流：
 
-- 使用 `yolo11s.pt`
+- WebRTC minimal 使用 `yolo11s.pt`；MJPEG minimal 在 Jetson Orin
+  使用 `yolo11n.engine`
 - 不含 GPS 與完整目標邏輯
 - 可從 CLI 選 V4L2 或 tcambin
 - 有共用的網頁相機控制 GUI
