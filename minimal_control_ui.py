@@ -166,6 +166,9 @@ def build_page(
       <label>One Push Focus</label><span>單次自動對焦</span>
       <button id="focus-one-push"
         onclick="applyAction('focus_one_push')">觸發</button></div>
+    <div class="row">
+      <label>YOLO 圖片</label><span>立即儲存 5 張</span>
+      <button id="capture-button" onclick="captureFrames()">擷取</button></div>
       <div id="message"></div>
     </section>
   </aside>
@@ -268,6 +271,35 @@ async function applyAction(name) {{
       ? "One Push Focus 已觸發"
       : "One Push Focus 未觸發";
   }} catch (error) {{
+    message.textContent = "錯誤：" + error.message;
+  }}
+}}
+
+async function captureFrames() {{
+  const button = document.getElementById("capture-button");
+  const message = document.getElementById("message");
+  button.disabled = true;
+  try {{
+    const response = await fetch("/api/capture", {{ method: "POST" }});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "擷取失敗");
+    message.textContent = data.message + "；Jetson 背景存檔中";
+
+    let remaining = Math.ceil(data.cooldown || 10);
+    button.textContent = `冷卻中 (${{remaining}} 秒)`;
+    const timer = setInterval(() => {{
+      remaining -= 1;
+      if (remaining <= 0) {{
+        clearInterval(timer);
+        button.disabled = false;
+        button.textContent = "擷取";
+      }} else {{
+        button.textContent = `冷卻中 (${{remaining}} 秒)`;
+      }}
+    }}, 1000);
+  }} catch (error) {{
+    button.disabled = false;
+    button.textContent = "擷取";
     message.textContent = "錯誤：" + error.message;
   }}
 }}

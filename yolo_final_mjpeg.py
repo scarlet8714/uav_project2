@@ -191,6 +191,15 @@ def camera_control():
         return jsonify(error=str(exc)), 400
 
 
+@app.post("/api/capture")
+def capture_frames():
+    try:
+        accepted, result = processor.request_capture()
+        return jsonify(result), 202 if accepted else 429
+    except Exception as exc:
+        return jsonify(error=str(exc)), 500
+
+
 if __name__ == "__main__":
     settings = parse_args()
     print(

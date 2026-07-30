@@ -26,6 +26,7 @@ from ultralytics import YOLO
 from gps_geolocation import GPSReader, estimate_target_gps_from_reader
 from minimal_camera_control import CameraControlError, CameraManager
 from minimal_control_ui import build_page
+from minimal_frame_capture import FrameCapture
 
 
 # ---------------------------------------------------------------------------
@@ -38,8 +39,8 @@ CAMERA_INDEX = 0
 GSTREAMER_DEVICE = "/dev/video0"
 TISCAMERA_SERIAL = ""
 
-CAMERA_WIDTH = 1280
-CAMERA_HEIGHT = 720
+CAMERA_WIDTH = 1920
+CAMERA_HEIGHT = 1080
 CAMERA_FPS = 30
 CAMERA_READ_TIMEOUT_SEC = 2.0
 
@@ -47,7 +48,7 @@ CAMERA_READ_TIMEOUT_SEC = 2.0
 GSTREAMER_JPEG_DECODER = "jpegdec"
 GSTREAMER_DROP_OLD_FRAMES = True
 
-MODEL_PATH = "model/11s_car_960.engine"
+MODEL_PATH = "11s_car_544_960.engine"
 YOLO_IMGSZ = (544, 960)
 YOLO_CONF = 0.4
 YOLO_IOU = 0.45
@@ -444,6 +445,40 @@ class TargetTracker:
         return matches
 
 
+class FpsOverlay:
+    """Measure smoothed processed-frame FPS and draw it on a BGR frame."""
+
+    def __init__(self, smoothing=0.1):
+        self.smoothing = smoothing
+        self.last_time = None
+        self.fps = None
+
+    def draw(self, frame):
+        now = time.monotonic()
+        if self.last_time is not None:
+            elapsed = now - self.last_time
+            if elapsed > 0:
+                current_fps = 1.0 / elapsed
+                self.fps = (
+                    current_fps
+                    if self.fps is None
+                    else self.fps * (1.0 - self.smoothing)
+                    + current_fps * self.smoothing
+                )
+        self.last_time = now
+
+        label = "FPS: --" if self.fps is None else f"FPS: {self.fps:.1f}"
+        origin = (20, 45)
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 0, 0), 4, cv2.LINE_AA,
+        )
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 255, 0), 2, cv2.LINE_AA,
+        )
+
+
 class YoloGpsProcessor:
     """Runs one inference pipeline and stores only its latest result."""
 
@@ -453,6 +488,8 @@ class YoloGpsProcessor:
         self.camera_manager, self.camera = create_camera(settings)
         self.gps = GPSReader(port=GPS_PORT, baudrate=GPS_BAUDRATE)
         self.tracker = TargetTracker()
+        self.frame_capture = FrameCapture()
+        self.fps_overlay = FpsOverlay()
         self.frame = None
         self.lock = threading.Lock()
         self.running = True
@@ -559,6 +596,8 @@ class YoloGpsProcessor:
             except Exception as exc:
                 print(f"[YOLO] Frame processing failed: {exc}")
                 continue
+            self.fps_overlay.draw(annotated)
+            self.frame_capture.submit(annotated)
             with self.lock:
                 self.frame = annotated
 
@@ -566,11 +605,21 @@ class YoloGpsProcessor:
         with self.lock:
             return None if self.frame is None else self.frame.copy()
 
+    def request_capture(self):
+        status = self.camera_manager.status()
+        exposure = status.get("controls", {}).get("exposure", {})
+        return self.frame_capture.request({
+            "exposure": exposure.get("value", "unknown"),
+            "resolution": status.get("resolution", "unknown"),
+            "fps": status.get("fps", "unknown"),
+        })
+
     def close(self):
         self.running = False
         self.camera.close()
         self.thread.join()
         self.gps.stop()
+        self.frame_capture.close()
 
 
 # ---------------------------------------------------------------------------
@@ -658,6 +707,14 @@ async def camera_control(request):
         return web.json_response({"error": str(exc)}, status=400)
 
 
+async def capture_frames(_request):
+    try:
+        accepted, result = await asyncio.to_thread(processor.request_capture)
+        return web.json_response(result, status=202 if accepted else 429)
+    except Exception as exc:
+        return web.json_response({"error": str(exc)}, status=500)
+
+
 async def on_startup(_app):
     global processor
     processor = YoloGpsProcessor(settings)
@@ -675,6 +732,7 @@ app.router.add_get("/", index)
 app.router.add_post("/offer", offer)
 app.router.add_get("/api/camera", camera_status)
 app.router.add_post("/api/camera/control", camera_control)
+app.router.add_post("/api/capture", capture_frames)
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 

@@ -30,6 +30,7 @@ from ultralytics import YOLO
 
 from minimal_camera_control import CameraControlError, CameraManager
 from minimal_control_ui import build_page
+from minimal_frame_capture import FrameCapture
 
 # Only change this value to use another YOLO model.
 MODEL_PATH = "yolo11s.engine"
@@ -44,6 +45,41 @@ YOLO_CONF = 0.4
 
 HTTP_HOST = "0.0.0.0"
 HTTP_PORT = 8080
+frame_capture = FrameCapture()
+
+
+class FpsOverlay:
+    """Measure smoothed output FPS and draw it on a BGR frame."""
+
+    def __init__(self, smoothing=0.1):
+        self.smoothing = smoothing
+        self.last_time = None
+        self.fps = None
+
+    def draw(self, frame):
+        now = time.monotonic()
+        if self.last_time is not None:
+            elapsed = now - self.last_time
+            if elapsed > 0:
+                current_fps = 1.0 / elapsed
+                self.fps = (
+                    current_fps
+                    if self.fps is None
+                    else self.fps * (1.0 - self.smoothing)
+                    + current_fps * self.smoothing
+                )
+        self.last_time = now
+
+        label = "FPS: --" if self.fps is None else f"FPS: {self.fps:.1f}"
+        origin = (20, 45)
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 0, 0), 4, cv2.LINE_AA,
+        )
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 255, 0), 2, cv2.LINE_AA,
+        )
 
 
 HTML = """<!doctype html>
@@ -329,6 +365,7 @@ class YoloCamera:
                     (CAMERA_WIDTH, CAMERA_HEIGHT),
                     interpolation=cv2.INTER_LINEAR,
                 )
+            frame_capture.submit(annotated_frame)
 
             with self.lock:
                 self.frame = annotated_frame
@@ -349,6 +386,7 @@ class CameraVideoTrack(VideoStreamTrack):
         self.camera = camera
         self.started_at = time.monotonic()
         self.frame_index = 0
+        self.fps_overlay = FpsOverlay()
 
     async def recv(self):
         # WebRTC video uses a 90 kHz clock.
@@ -364,6 +402,7 @@ class CameraVideoTrack(VideoStreamTrack):
             await asyncio.sleep(0.01)
             frame = self.camera.get_frame()
 
+        self.fps_overlay.draw(frame)
         video_frame = VideoFrame.from_ndarray(frame, format="bgr24")
         video_frame.pts = pts
         video_frame.time_base = fractions.Fraction(1, 90000)
@@ -422,6 +461,20 @@ async def camera_control(request):
         return web.json_response({"error": str(exc)}, status=400)
 
 
+async def capture_frames(_request):
+    try:
+        status = await asyncio.to_thread(camera.source.status)
+        exposure = status.get("controls", {}).get("exposure", {})
+        accepted, result = frame_capture.request({
+            "exposure": exposure.get("value", "unknown"),
+            "resolution": status.get("resolution", "unknown"),
+            "fps": status.get("fps", "unknown"),
+        })
+        return web.json_response(result, status=202 if accepted else 429)
+    except Exception as exc:
+        return web.json_response({"error": str(exc)}, status=500)
+
+
 async def on_startup(_app):
     global camera
     camera = YoloCamera(
@@ -436,6 +489,7 @@ async def on_shutdown(_app):
     pcs.clear()
     if camera is not None:
         camera.close()
+    frame_capture.close()
 
 
 app = web.Application()
@@ -443,6 +497,7 @@ app.router.add_get("/", index)
 app.router.add_post("/offer", offer)
 app.router.add_get("/api/camera", camera_status)
 app.router.add_post("/api/camera/control", camera_control)
+app.router.add_post("/api/capture", capture_frames)
 app.on_startup.append(on_startup)
 app.on_shutdown.append(on_shutdown)
 

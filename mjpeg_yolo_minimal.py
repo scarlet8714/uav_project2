@@ -24,8 +24,9 @@ from ultralytics import YOLO
 
 from minimal_camera_control import CameraControlError, CameraManager
 from minimal_control_ui import build_page
+from minimal_frame_capture import FrameCapture
 
-MODEL_PATH = "yolo11n.engine"
+MODEL_PATH = "yolo11s.engine"
 CAMERA_SOURCE = "opencv"
 CAMERA_INDEX = 0
 TISCAMERA_SERIAL = ""
@@ -35,6 +36,40 @@ CAMERA_FPS = 30
 
 HTTP_HOST = "0.0.0.0"
 HTTP_PORT = 5000
+
+class FpsOverlay:
+    """Measure smoothed output FPS and draw it on a BGR frame."""
+
+    def __init__(self, smoothing=0.1):
+        self.smoothing = smoothing
+        self.last_time = None
+        self.fps = None
+
+    def draw(self, frame):
+        now = time.monotonic()
+        if self.last_time is not None:
+            elapsed = now - self.last_time
+            if elapsed > 0:
+                current_fps = 1.0 / elapsed
+                self.fps = (
+                    current_fps
+                    if self.fps is None
+                    else self.fps * (1.0 - self.smoothing)
+                    + current_fps * self.smoothing
+                )
+        self.last_time = now
+
+        label = "FPS: --" if self.fps is None else f"FPS: {self.fps:.1f}"
+        origin = (20, 45)
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 0, 0), 4, cv2.LINE_AA,
+        )
+        cv2.putText(
+            frame, label, origin, cv2.FONT_HERSHEY_SIMPLEX,
+            1.0, (0, 255, 0), 2, cv2.LINE_AA,
+        )
+
 
 MJPEG_RECONNECT_SCRIPT = """
 const streamImage = document.getElementById("mjpeg-stream");
@@ -167,6 +202,7 @@ class TiscameraCameraSource:
 app = Flask(__name__)
 model = YOLO(MODEL_PATH)
 camera = None
+frame_capture = FrameCapture()
 
 
 def create_camera(camera_source, camera_index, tiscamera_serial):
@@ -181,6 +217,7 @@ def create_camera(camera_source, camera_index, tiscamera_serial):
 
 
 def gen_frames():
+    fps_overlay = FpsOverlay()
     while True:
         success, frame = camera.read()
         if not success:
@@ -192,6 +229,8 @@ def gen_frames():
 
         results = model(frame, verbose=False)
         annotated_frame = results[0].plot()
+        fps_overlay.draw(annotated_frame)
+        frame_capture.submit(annotated_frame)
 
         success, buffer = cv2.imencode(".jpg", annotated_frame)
         if not success:
@@ -238,6 +277,21 @@ def camera_control():
         return jsonify(error=str(exc)), 400
 
 
+@app.post("/api/capture")
+def capture_frames():
+    try:
+        status = camera.status()
+        exposure = status.get("controls", {}).get("exposure", {})
+        accepted, result = frame_capture.request({
+            "exposure": exposure.get("value", "unknown"),
+            "resolution": status.get("resolution", "unknown"),
+            "fps": status.get("fps", "unknown"),
+        })
+        return jsonify(result), 202 if accepted else 429
+    except Exception as exc:
+        return jsonify(error=str(exc)), 500
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Stream 1920x1080 30 FPS camera video with YOLO over MJPEG"
@@ -277,3 +331,4 @@ if __name__ == "__main__":
         app.run(host=HTTP_HOST, port=HTTP_PORT, threaded=True)
     finally:
         camera.close()
+        frame_capture.close()
