@@ -1,6 +1,6 @@
 # Current Status
 
-更新日期：2026-07-30
+更新日期：2026-08-05
 
 ## 目前基準
 
@@ -36,6 +36,17 @@ TensorRT engine 與 JetPack、TensorRT 版本及硬體綁定，不視為跨平�
 三個 final 共用 YOLO、GPS、連續幀確認、控制 GUI及截圖核心。
 `yolo_final_hw.py` 只替換相機轉換層；選擇 OpenCV backend 時仍不使用
 VIC。目前沒有 MJPEG + VIC 的 final 入口。
+
+目前建議的工業相機正式入口：
+
+```bash
+python yolo_final_hw.py \
+  --camera-backend tiscamera \
+  --tiscamera-serial 26410280
+```
+
+此 HW 入口只有相機輸入的 YUY2→BGRx 使用 Jetson VIC。WebRTC 輸出仍
+由 aiortc/PyAV 軟體編碼，尚未使用 Jetson `nvv4l2h264enc`。
 
 ## 已完成功能
 
@@ -96,16 +107,24 @@ Final 的 `--jpeg-decoder jpegdec|nvjpegdec` 目前僅保留 CLI 相容性。
 
 ## 已驗證
 
-### 既有相機與串流驗證
+### 相機與串流驗證
 
 - DFK AFU130-L53 的 V4L2 與 tcambin 均可取像
 - 1920×1080 可用 30、25、20、15、10、5 FPS
 - 4128×3096 可用 1 FPS
-- Minimal MJPEG 與 WebRTC 的 V4L2／tcambin 組合曾完成端到端測試
+- 工業相機 `/dev/video0` 是影像節點；`/dev/video1` 是 UVC metadata
+- 工業相機 1920×1080 @ 30 FPS 輸入為未壓縮 YUYV 4:2:2
+- Minimal MJPEG、WebRTC 軟體及 WebRTC VIC 均完成真實 client 端到端測試
+- `yolo_final.py` 與 `yolo_final_hw.py` 已用目前的
+  `11s_car_544_960.engine`、tcambin、1920×1080 @ 30 FPS 完成真實
+  WebRTC client 端到端測試
+- Webcam 已確認 1920×1080 @ 30 FPS 輸入為 MJPEG；YUYV 最高只有
+  640×480 @ 30 FPS
 - 兩個既有 final 曾以 `yolo11s.pt`、1280×720 完成三來源測試
 
-上述 final 測試早於目前的 `11s_car_544_960.engine` 與 1920×1080
-預設，不能視為新設定已完整重測。
+目前 final 的實測沒有 `/dev/ttyUSB0`，因此 GPS 驗證範圍是 reader
+無資料容錯及 `GPS unavailable` 標註；尚未驗證有效 NMEA、目標座標與
+GPS 更新延遲。
 
 ### Jetson VIC
 
@@ -120,9 +139,59 @@ YUYV 1920×1080 @ 30
 → annotated frame
 ```
 
-30 幀取流測試收到 30 幀，約 31 FPS；輸出為 1920×1080、
-三通道 `uint8`。相機、VIC 與 TensorRT 標註幀產生路徑已通過，但沒有
-保留實際瀏覽器 WebRTC/ICE 的完整驗證紀錄。
+除早期 30 幀取流測試外，現已用 aiortc client 完成 SDP、ICE、DTLS、
+RTP 與解碼驗證。Minimal VIC 及 Final VIC 都是 1920×1080，localhost
+測試均為 0 RTP packet loss。
+
+## 效能測試摘要
+
+### 階段一：MJPEG → WebRTC
+
+以 1920×1080 @ 30 FPS webcam 為例：
+
+| 指標 | MJPEG | WebRTC |
+|---|---:|---:|
+| Client 收到 FPS | 13.74 | 38.14* |
+| 網路流量 | 38.55 Mb/s | 1.14 Mb/s |
+| Server CPU | 64.6% | 203.9% |
+| Server RSS | 1254.6 MiB | 1451.2 MiB |
+
+WebRTC 將頻寬降低約 97%，代價是 aiortc/PyAV 軟體編碼增加 CPU 與
+記憶體。此處 WebRTC FPS 包含啟動追趕與重複最新 frame，不代表真正
+有 38 FPS 的新 YOLO 結果。
+
+### 階段二：CPU 色彩轉換 → Jetson VIC
+
+工業相機 Minimal：
+
+| 指標 | WebRTC 軟體 | WebRTC VIC |
+|---|---:|---:|
+| Server CPU 平均 | 254.94% | 207.28% |
+| Client 幀間隔 P95* | 57.27 ms | 43.76 ms |
+
+VIC 使 Minimal 平均 CPU 降低約 18.7%。
+
+工業相機 Final：
+
+| 指標 | `yolo_final.py` | `yolo_final_hw.py` |
+|---|---:|---:|
+| Server CPU 平均 | 253.56% | 230.75% |
+| Server CPU P95 | 298.4% | 287.0% |
+| Client 幀間隔 P95* | 57.66 ms | 45.87 ms |
+| Server RSS | 1409.62 MiB | 1482.64 MiB |
+
+VIC 使 Final 平均 CPU 降低約 9.0%，client 幀間隔 P95 改善約 20.4%，
+但 RSS 多約 73 MiB。本輪功耗條件不足以判定 VIC 是否節能。
+
+\* WebRTC client 指標仍受重複 frame 與排程追趕影響，不等同 unique
+YOLO frame latency。
+
+完整報告：
+
+- `MJPEG_WEBRTC_PERFORMANCE_REPORT.md`
+- `INDUSTRIAL_CAMERA_STREAMING_PERFORMANCE_REPORT.md`
+- `YOLO_FINAL_INDUSTRIAL_CAMERA_PERFORMANCE_REPORT.md`
+- `TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md`
 
 ### Minimal 截圖
 
@@ -140,8 +209,8 @@ HTTP 202／429 冷卻行為亦通過。
 - 目錄命名、metadata 檔名與冷卻邏輯
 - `git diff --check`
 
-尚未以實體相機、TensorRT、GPS及瀏覽器對三個 final 做完整端到端
-截圖測試。
+尚未以有效 GPS 資料對三個 final 做完整目標定位與實體相機截圖整合
+測試。
 
 ## 目前 Git working tree 重點
 
@@ -163,6 +232,10 @@ HTTP 202／429 冷卻行為亦通過。
 - `yolo_final_hw.py`
 - 三組 minimal 實測 JPEG 目錄
 - `camera_test.py`
+- `MJPEG_WEBRTC_PERFORMANCE_REPORT.md`
+- `INDUSTRIAL_CAMERA_STREAMING_PERFORMANCE_REPORT.md`
+- `YOLO_FINAL_INDUSTRIAL_CAMERA_PERFORMANCE_REPORT.md`
+- `TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md`
 
 ## 已知限制
 
@@ -171,16 +244,31 @@ HTTP 202／429 冷卻行為亦通過。
   YUYV 時可能無法以該設定啟動。
 - MJPEG 1920×1080 頻寬很高。
 - WebRTC 跨主機、NAT 或防火牆環境可能需要 STUN/TURN。
+- WebRTC offer 至首幀目前約 10.25 秒。
+- `CameraVideoTrack` 在協商前開始時基，連線後會 burst catch-up；client
+  FPS 也可能包含重複最新 YOLO frame。
+- WebRTC 目前使用 aiortc/PyAV 軟體視訊編碼，HW 版本尚未使用 Jetson
+  硬體 H.264 encoder。
+- WebRTC server 啟動後即使沒有 viewer 仍持續相機、YOLO 與標註。
+- 工業相機 YUYV 1920×1080 @ 30 FPS 原始資料率約 995 Mb/s，USB、
+  記憶體 copy 與色彩轉換成本高。
+- 目前測試只有 4 個 CPU cores online；nvpmodel 變更會影響效能數據。
+- Final 尚未用有效 `/dev/ttyUSB0` GPS 做 NMEA 與目標座標端到端驗證。
 - tcambin 重建與高解析度首幀可能較慢。
 - 相機控制值讀回一致不代表畫面效果已量測驗證。
-- 受限 sandbox 無法存取 USB、`/dev/video*` 或 Jetson GPU。
 
 ## 下一步
 
-1. 以 `11s_car_544_960.engine`、1920×1080 重測兩個一般 final 的三種
-   相機來源。
-2. 實機驗證 `yolo_final_hw.py` 的 GStreamer、tcambin、WebRTC、GPS
-   與五張截圖完整流程。
-3. 用一般 webcam 測試其 MJPEG/YUYV 能力與實際 OpenCV FOURCC。
-4. 如有需求，再加入 MJPEG → `nvjpegdec` 路徑及明確 fallback 策略。
-5. 以 Chrome／Firefox 驗證實際 ICE，評估 STUN/TURN。
+1. 修正 WebRTC 約 10 秒首幀等待與 `started_at` burst catch-up。
+2. 在 capture、YOLO、annotation、send、client decode/render 加入
+   `frame_id` 與 timestamps，量測 unique YOLO FPS。
+3. 整合 Jetson 硬體 H.264 encoder；目前 GStreamer 只負責相機輸入與
+   VIC 色彩轉換。
+4. 減少 BGRx→BGR、latest frame 與 VideoFrame 的重複 copy。
+5. 用遠端實體 client 測試 Chrome／Firefox、純 server 功耗、LAN 延遲
+   與 STUN/TURN。
+6. 鎖定 exposure、gain、white balance 與場景，軟體／VIC 交錯各跑
+   5 次，並做 30～60 分鐘 soak test。
+7. 接上 `/dev/ttyUSB0` GPS 後測 NMEA、目標座標、GPS 更新延遲與五張
+   final 截圖完整流程。
+8. 測試 1、2、4 viewer；目前每個 WebRTC peer 仍有獨立 encoder。
