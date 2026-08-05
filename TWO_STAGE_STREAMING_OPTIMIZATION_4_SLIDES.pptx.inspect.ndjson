@@ -1,0 +1,58 @@
+{"kind":"deck","id":"pr/1j3b1l","name":"Deck"}
+{"kind":"layout","layoutId":"d32fef87-b9a7-423a-b5d1-7db93c354747","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ac23d477-651f-46b9-b53d-2a013db378c1","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/wtzves","slide":1,"title":"JETSON 影像串流","textShapes":5}
+{"kind":"textbox","id":"sh/fu5sj650","slide":1,"name":"cover-kicker","text":"JETSON 影像串流","textPreview":"JETSON 影像串流","textChars":11,"textLines":1,"bbox":[41,41,600,68]}
+{"kind":"textbox","id":"sh/0vetcbml","slide":1,"name":"cover-title","text":"兩階段\n效能優化","textPreview":"兩階段 | 效能優化","textChars":8,"textLines":2,"bbox":[41,170,992,275]}
+{"kind":"textbox","id":"sh/1wnalgn6","slide":1,"name":"cover-subtitle","text":"先解決頻寬，再降低輸入端 CPU","textPreview":"先解決頻寬，再降低輸入端 CPU","textChars":16,"textLines":1,"bbox":[41,500,820,70]}
+{"kind":"shape","id":"sh/2xwbe14r","slide":1,"name":"cover-stage-1","bbox":[900,505,128,54]}
+{"kind":"textbox","id":"sh/ny5sn65c","slide":1,"name":"cover-stage-1-label","text":"1  WebRTC","textPreview":"1  WebRTC","textChars":9,"textLines":1,"bbox":[916,519,104,28]}
+{"kind":"shape","id":"sh/ozetgbmh","slide":1,"name":"cover-stage-2","bbox":[1044,505,128,54]}
+{"kind":"textbox","id":"sh/p0napgn2","slide":1,"name":"cover-stage-2-label","text":"2  VIC","textPreview":"2  VIC","textChars":6,"textLines":1,"bbox":[1064,519,92,28]}
+{"kind":"notes","id":"nt/wtzves","slide":1,"text":"[Sources]\n- C:\\Users\\lab508\\Desktop\\uav_project2\\TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md\n\nDeck overview: the two optimization stages and their measured impact."}
+{"kind":"slide","id":"sl/vq8avw","slide":2,"title":"階段一：WebRTC 幾乎消除頻寬壓力","textShapes":10}
+{"kind":"textbox","id":"sh/lwf25gb6","slide":2,"name":"s2-title","text":"階段一：WebRTC 幾乎消除頻寬壓力","textPreview":"階段一：WebRTC 幾乎消除頻寬壓力","textChars":19,"textLines":1,"bbox":[41,36,1197,70]}
+{"kind":"textbox","id":"sh/yto3ulcv","slide":2,"name":"s2-intro","text":"1920×1080 @ 30 FPS 實測：以較高 CPU 成本，換取更適合 Wi-Fi 與遠端監看的傳輸效率。","textPreview":"1920×1080 @ 30 FPS 實測：以較高 CPU 成本，換取更適合 Wi-Fi 與遠端監看的傳輸效率。","textChars":56,"textLines":1,"bbox":[42,122,1197,115]}
+{"kind":"textbox","id":"sh/zuxk3qtg","slide":2,"name":"s2-callout","text":"網路流量降低約 97%","textPreview":"網路流量降低約 97%","textChars":11,"textLines":1,"bbox":[42,252,1197,55]}
+{"kind":"shape","id":"sh/8jql0vux","slide":2,"name":"s2-mjpeg-card","bbox":[42,351,581,139]}
+{"kind":"shape","id":"sh/9kz290bi","slide":2,"name":"s2-webrtc-card","bbox":[657,351,581,139]}
+{"kind":"textbox","id":"sh/mho3ylcr","slide":2,"name":"s2-mjpeg-label","text":"MJPEG","textPreview":"MJPEG","textChars":5,"textLines":1,"bbox":[73,377,523,45]}
+{"kind":"textbox","id":"sh/7ihk7qtc","slide":2,"name":"s2-mjpeg-stat","text":"38.55 Mb/s","textPreview":"38.55 Mb/s","textChars":10,"textLines":1,"bbox":[73,425,523,50]}
+{"kind":"textbox","id":"sh/onm1orut","slide":2,"name":"s2-mjpeg-detail","text":"CPU 64.6%\n架構簡單，但 1080p 頻寬高","textPreview":"CPU 64.6% | 架構簡單，但 1080p 頻寬高","textChars":26,"textLines":2,"bbox":[73,507,550,103]}
+{"kind":"textbox","id":"sh/pov2xwby","slide":2,"name":"s2-webrtc-label","text":"WebRTC","textPreview":"WebRTC","textChars":6,"textLines":1,"bbox":[689,377,523,45]}
+{"kind":"textbox","id":"sh/xcjaxgri","slide":2,"name":"s2-webrtc-stat","text":"1.14 Mb/s","textPreview":"1.14 Mb/s","textChars":9,"textLines":1,"bbox":[689,425,523,50]}
+{"kind":"textbox","id":"sh/wba94bqx","slide":2,"name":"s2-webrtc-detail","text":"CPU 203.9%\naiortc/PyAV 軟體編碼仍是代價","textPreview":"CPU 203.9% | aiortc/PyAV 軟體編碼仍是代價","textChars":31,"textLines":2,"bbox":[689,507,550,103]}
+{"kind":"textbox","id":"sh/va1sv69c","slide":2,"name":"page-2","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[1184,659,54,25]}
+{"kind":"notes","id":"nt/vq8avw","slide":2,"text":"[Sources]\n- C:\\Users\\lab508\\Desktop\\uav_project2\\TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md\n\nStage 1 measurements. WebRTC FPS in the source includes repeated/latest frames and startup catch-up; it is not unique YOLO FPS."}
+{"kind":"slide","id":"sl/guycei","slide":3,"title":"階段二：VIC 降低輸入端色彩轉換負載","textShapes":10}
+{"kind":"textbox","id":"sh/wj2hsb2d","slide":3,"name":"s3-title","text":"階段二：VIC 降低輸入端色彩轉換負載","textPreview":"階段二：VIC 降低輸入端色彩轉換負載","textChars":19,"textLines":1,"bbox":[41,36,1197,72]}
+{"kind":"textbox","id":"sh/bi9gz61s","slide":3,"name":"s3-intro","text":"工業相機 YUYV → Jetson VIC（nvvidconv）→ BGRx。色彩轉換改由 SoC 專用硬體執行。","textPreview":"工業相機 YUYV → Jetson VIC（nvvidconv）→ BGRx。色彩轉換改由 SoC 專用硬體執行。","textChars":58,"textLines":1,"bbox":[41,125,1197,115]}
+{"kind":"textbox","id":"sh/ah0fqlkn","slide":3,"name":"s3-thesis","text":"輸入端已硬體加速，但輸出端 WebRTC 軟體編碼仍在 CPU。","textPreview":"輸入端已硬體加速，但輸出端 WebRTC 軟體編碼仍在 CPU。","textChars":32,"textLines":1,"bbox":[41,245,1197,50]}
+{"kind":"shape","id":"sh/9gryxgj2","slide":3,"name":"s3-card-1","bbox":[41,317,375,312]}
+{"kind":"shape","id":"sh/ofixob2h","slide":3,"name":"s3-card-2","bbox":[453,317,375,312]}
+{"kind":"shape","id":"sh/ne9gv61w","slide":3,"name":"s3-card-3","bbox":[864,317,375,312]}
+{"kind":"textbox","id":"sh/md0fm1kb","slide":3,"name":"s3-stat-1","text":"18.7%","textPreview":"18.7%","textChars":5,"textLines":1,"bbox":[74,360,309,143]}
+{"kind":"textbox","id":"sh/1crytwjq","slide":3,"name":"s3-body-1","text":"Minimal\n平均 CPU 降幅","textPreview":"Minimal | 平均 CPU 降幅","textChars":17,"textLines":2,"bbox":[74,515,310,86]}
+{"kind":"textbox","id":"sh/0byxkr25","slide":3,"name":"s3-stat-2","text":"9.0%","textPreview":"9.0%","textChars":4,"textLines":1,"bbox":[485,360,309,143]}
+{"kind":"textbox","id":"sh/ehsvih4f","slide":3,"name":"s3-body-2","text":"Final\n平均 CPU 降幅","textPreview":"Final | 平均 CPU 降幅","textChars":15,"textLines":2,"bbox":[485,515,310,86]}
+{"kind":"textbox","id":"sh/fi1wbm50","slide":3,"name":"s3-stat-3","text":"20.4%","textPreview":"20.4%","textChars":5,"textLines":1,"bbox":[897,360,309,143]}
+{"kind":"textbox","id":"sh/0jadkrml","slide":3,"name":"s3-body-3","text":"Final\n幀間隔 P95 改善","textPreview":"Final | 幀間隔 P95 改善","textChars":16,"textLines":2,"bbox":[897,515,310,86]}
+{"kind":"textbox","id":"sh/1k3edcn6","slide":3,"name":"page-3","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[1184,659,54,25]}
+{"kind":"notes","id":"nt/guycei","slide":3,"text":"[Sources]\n- C:\\Users\\lab508\\Desktop\\uav_project2\\TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md\n\nStage 2 measurements. Final RSS increased by about 73 MiB; power-saving was not established in the current test order."}
+{"kind":"slide","id":"sl/uo23pp","slide":4,"title":"兩階段完成後，瓶頸移到輸出端編碼","textShapes":11}
+{"kind":"textbox","id":"sh/76pwvm1w","slide":4,"name":"s4-title","text":"兩階段完成後，瓶頸移到輸出端編碼","textPreview":"兩階段完成後，瓶頸移到輸出端編碼","textChars":16,"textLines":1,"bbox":[41,36,1197,72]}
+{"kind":"textbox","id":"sh/87ydo7ih","slide":4,"name":"s4-label-1","text":"已完成","textPreview":"已完成","textChars":3,"textLines":1,"bbox":[41,299,169,30]}
+{"kind":"textbox","id":"sh/9s7excj2","slide":4,"name":"s4-label-2","text":"已完成","textPreview":"已完成","textChars":3,"textLines":1,"bbox":[451,299,169,30]}
+{"kind":"textbox","id":"sh/utgvqh07","slide":4,"name":"s4-label-3","text":"下一步","textPreview":"下一步","textChars":3,"textLines":1,"bbox":[863,299,169,30]}
+{"kind":"shape","id":"sh/vupwzm1s","slide":4,"name":"s4-line","bbox":[35,354,1286,0.1]}
+{"kind":"shape","id":"sh/wvyxsrid","slide":4,"name":"s4-dot-1","bbox":[35,346,16,16]}
+{"kind":"shape","id":"sh/hw7e1wzy","slide":4,"name":"s4-dot-2","bbox":[444,346,16,16]}
+{"kind":"shape","id":"sh/qxcvex03","slide":4,"name":"s4-dot-3","bbox":[856,346,16,16]}
+{"kind":"textbox","id":"sh/by5wni1o","slide":4,"name":"s4-body-1-title","text":"① WebRTC","textPreview":"① WebRTC","textChars":8,"textLines":1,"bbox":[42,401,331,45]}
+{"kind":"textbox","id":"sh/7mp47i5k","slide":4,"name":"s4-body-1","text":"頻寬下降約 97%\n適合遠端即時串流","textPreview":"頻寬下降約 97% | 適合遠端即時串流","textChars":18,"textLines":2,"bbox":[42,455,331,112]}
+{"kind":"textbox","id":"sh/6lgnydoz","slide":4,"name":"s4-body-2-title","text":"② VIC","textPreview":"② VIC","textChars":5,"textLines":1,"bbox":[453,401,331,45]}
+{"kind":"textbox","id":"sh/t8rm98nq","slide":4,"name":"s4-body-2","text":"Final CPU 降低約 9%\n改善幀間隔尾端","textPreview":"Final CPU 降低約 9% | 改善幀間隔尾端","textChars":24,"textLines":2,"bbox":[453,455,331,112]}
+{"kind":"textbox","id":"sh/87i50n65","slide":4,"name":"s4-body-3-title","text":"③ NVENC H.264","textPreview":"③ NVENC H.264","textChars":13,"textLines":1,"bbox":[859,401,350,45]}
+{"kind":"textbox","id":"sh/jip43y5o","slide":4,"name":"s4-body-3","text":"取代 CPU 軟體編碼\n並減少 frame copy","textPreview":"取代 CPU 軟體編碼 | 並減少 frame copy","textChars":26,"textLines":2,"bbox":[859,455,331,112]}
+{"kind":"textbox","id":"sh/yhgnuto3","slide":4,"name":"page-4","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[1184,659,54,25]}
+{"kind":"notes","id":"nt/uo23pp","slide":4,"text":"[Sources]\n- C:\\Users\\lab508\\Desktop\\uav_project2\\TWO_STAGE_STREAMING_OPTIMIZATION_SUMMARY.md\n\nSynthesis and recommended next engineering priority: Jetson hardware H.264 encoding, startup catch-up fixes, unique-frame timestamps, and fewer copies."}
