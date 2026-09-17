@@ -1,0 +1,26 @@
+RTSP input: rtsp://192.168.144.135/live
+Decode: H.264 -> nvv4l2decoder -> nvvidconv -> BGRx
+Encode: BGRx -> nvvidconv -> NVMM/NV12 -> nvv4l2h264enc (3000000 bit/s)
+Open http://<device-ip>:8080 in a browser
+======== Running on http://0.0.0.0:8080 ========
+(Press CTRL+C to quit)
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+WebRTC connection state: connecting
+WebRTC connection state: connected
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 4 
+===== NvVideo: NVENC =====
+NvMMLiteBlockCreate : Block : BlockType = 4 
+H264: extProfile = 2 Level = 0 
+NVMEDIA: Need to set EMC bandwidth : 376000 
+RTSP pipeline reached end of stream; reconnecting in 1 second
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+RTSP pipeline reached end of stream; reconnecting in 1 second
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+WebRTC connection state: closed

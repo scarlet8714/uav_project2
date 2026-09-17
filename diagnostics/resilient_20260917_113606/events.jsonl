@@ -1,0 +1,77 @@
+{"time": "2026-09-17T11:36:06.670+08:00", "monotonic": 6692.308237, "kind": "configured", "settings": {"rtsp_url": "rtsp://192.168.144.135/live", "fps": 30, "model_path": "11s_car_544_960.engine", "h264_bitrate": 3000000, "port": 8080}}
+{"time": "2026-09-17T11:36:06.781+08:00", "monotonic": 6692.419697, "kind": "server_started"}
+{"time": "2026-09-17T11:36:07.784+08:00", "monotonic": 6693.422578, "kind": "input_stall", "yolo_age_s": null}
+{"time": "2026-09-17T11:36:07.784+08:00", "monotonic": 6693.422881, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:08.786+08:00", "monotonic": 6694.42434, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:09.787+08:00", "monotonic": 6695.425881, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:10.789+08:00", "monotonic": 6696.427455, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:11.791+08:00", "monotonic": 6697.429042, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:12.792+08:00", "monotonic": 6698.43067, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:13.794+08:00", "monotonic": 6699.432512, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:14.797+08:00", "monotonic": 6700.435454, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:15.172+08:00", "monotonic": 6700.810868, "kind": "peer_created", "peer_id": "b46712d06d", "remote": "100.92.68.122"}
+{"time": "2026-09-17T11:36:15.799+08:00", "monotonic": 6701.437558, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:16.801+08:00", "monotonic": 6702.439106, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:17.802+08:00", "monotonic": 6703.440215, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:18.803+08:00", "monotonic": 6704.441685, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:19.804+08:00", "monotonic": 6705.442947, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:20.807+08:00", "monotonic": 6706.445498, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:21.202+08:00", "monotonic": 6706.840496, "kind": "offer_answered", "peer_id": "b46712d06d"}
+{"time": "2026-09-17T11:36:21.204+08:00", "monotonic": 6706.842943, "kind": "peer_ice_state", "peer_id": "b46712d06d", "state": "checking"}
+{"time": "2026-09-17T11:36:21.205+08:00", "monotonic": 6706.843123, "kind": "peer_connection_state", "peer_id": "b46712d06d", "state": "connecting"}
+{"time": "2026-09-17T11:36:21.615+08:00", "monotonic": 6707.253847, "kind": "peer_ice_state", "peer_id": "b46712d06d", "state": "completed"}
+{"time": "2026-09-17T11:36:21.692+08:00", "monotonic": 6707.330029, "kind": "peer_connection_state", "peer_id": "b46712d06d", "state": "connected"}
+{"time": "2026-09-17T11:36:21.808+08:00", "monotonic": 6707.446043, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "b46712d06d", "state": "connected", "ice": "completed"}], "encoders": []}
+{"time": "2026-09-17T11:36:22.110+08:00", "monotonic": 6707.74821, "kind": "peer_ice_state", "peer_id": "b46712d06d", "state": "closed"}
+{"time": "2026-09-17T11:36:22.110+08:00", "monotonic": 6707.748414, "kind": "peer_closing", "peer_id": "b46712d06d", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-17T11:36:22.138+08:00", "monotonic": 6707.776372, "kind": "peer_connection_state", "peer_id": "b46712d06d", "state": "closed"}
+{"time": "2026-09-17T11:36:22.809+08:00", "monotonic": 6708.447931, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:23.275+08:00", "monotonic": 6708.913329, "kind": "peer_created", "peer_id": "93a76c7c18", "remote": "100.92.68.122"}
+{"time": "2026-09-17T11:36:23.811+08:00", "monotonic": 6709.449245, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:24.812+08:00", "monotonic": 6710.450027, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:25.813+08:00", "monotonic": 6711.451942, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:26.815+08:00", "monotonic": 6712.453967, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:27.816+08:00", "monotonic": 6713.454928, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:28.818+08:00", "monotonic": 6714.456568, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:29.301+08:00", "monotonic": 6714.939471, "kind": "offer_answered", "peer_id": "93a76c7c18"}
+{"time": "2026-09-17T11:36:29.303+08:00", "monotonic": 6714.941773, "kind": "peer_ice_state", "peer_id": "93a76c7c18", "state": "checking"}
+{"time": "2026-09-17T11:36:29.303+08:00", "monotonic": 6714.941949, "kind": "peer_connection_state", "peer_id": "93a76c7c18", "state": "connecting"}
+{"time": "2026-09-17T11:36:29.671+08:00", "monotonic": 6715.309977, "kind": "peer_ice_state", "peer_id": "93a76c7c18", "state": "completed"}
+{"time": "2026-09-17T11:36:29.754+08:00", "monotonic": 6715.392357, "kind": "peer_connection_state", "peer_id": "93a76c7c18", "state": "connected"}
+{"time": "2026-09-17T11:36:29.819+08:00", "monotonic": 6715.457991, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "93a76c7c18", "state": "connected", "ice": "completed"}], "encoders": []}
+{"time": "2026-09-17T11:36:30.539+08:00", "monotonic": 6716.177043, "kind": "peer_ice_state", "peer_id": "93a76c7c18", "state": "closed"}
+{"time": "2026-09-17T11:36:30.539+08:00", "monotonic": 6716.177229, "kind": "peer_closing", "peer_id": "93a76c7c18", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-17T11:36:30.539+08:00", "monotonic": 6716.177492, "kind": "peer_connection_state", "peer_id": "93a76c7c18", "state": "closed"}
+{"time": "2026-09-17T11:36:30.821+08:00", "monotonic": 6716.459018, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:31.822+08:00", "monotonic": 6717.460554, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:32.706+08:00", "monotonic": 6718.344103, "kind": "peer_created", "peer_id": "6d275efc61", "remote": "100.92.68.122"}
+{"time": "2026-09-17T11:36:32.824+08:00", "monotonic": 6718.462712, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:33.826+08:00", "monotonic": 6719.464213, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:34.827+08:00", "monotonic": 6720.465464, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:35.828+08:00", "monotonic": 6721.466613, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:36.829+08:00", "monotonic": 6722.467502, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:37.831+08:00", "monotonic": 6723.469474, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:38.730+08:00", "monotonic": 6724.36849, "kind": "offer_answered", "peer_id": "6d275efc61"}
+{"time": "2026-09-17T11:36:38.759+08:00", "monotonic": 6724.397495, "kind": "peer_ice_state", "peer_id": "6d275efc61", "state": "checking"}
+{"time": "2026-09-17T11:36:38.759+08:00", "monotonic": 6724.397604, "kind": "peer_connection_state", "peer_id": "6d275efc61", "state": "connecting"}
+{"time": "2026-09-17T11:36:38.832+08:00", "monotonic": 6724.470544, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "connecting", "ice": "checking"}], "encoders": []}
+{"time": "2026-09-17T11:36:39.126+08:00", "monotonic": 6724.764909, "kind": "peer_ice_state", "peer_id": "6d275efc61", "state": "completed"}
+{"time": "2026-09-17T11:36:39.200+08:00", "monotonic": 6724.838369, "kind": "peer_connection_state", "peer_id": "6d275efc61", "state": "connected"}
+{"time": "2026-09-17T11:36:39.833+08:00", "monotonic": 6725.47177, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "connected", "ice": "completed"}], "encoders": []}
+{"time": "2026-09-17T11:36:40.834+08:00", "monotonic": 6726.472607, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "6d275efc61", "state": "connected", "ice": "completed"}], "encoders": []}
+{"time": "2026-09-17T11:36:41.537+08:00", "monotonic": 6727.175065, "kind": "peer_ice_state", "peer_id": "6d275efc61", "state": "closed"}
+{"time": "2026-09-17T11:36:41.537+08:00", "monotonic": 6727.175281, "kind": "peer_closing", "peer_id": "6d275efc61", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-17T11:36:41.537+08:00", "monotonic": 6727.175505, "kind": "peer_connection_state", "peer_id": "6d275efc61", "state": "closed"}
+{"time": "2026-09-17T11:36:41.835+08:00", "monotonic": 6727.473817, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:42.836+08:00", "monotonic": 6728.474627, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-17T11:36:43.696+08:00", "monotonic": 6729.334767, "kind": "peer_created", "peer_id": "06fbd0446a", "remote": "100.92.68.122"}
+{"time": "2026-09-17T11:36:43.838+08:00", "monotonic": 6729.476427, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "06fbd0446a", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:44.867+08:00", "monotonic": 6730.505578, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "06fbd0446a", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:45.869+08:00", "monotonic": 6731.507632, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "06fbd0446a", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:46.871+08:00", "monotonic": 6732.509327, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "06fbd0446a", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:47.872+08:00", "monotonic": 6733.510894, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "06fbd0446a", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-17T11:36:48.785+08:00", "monotonic": 6734.423142, "kind": "peer_closing", "peer_id": "06fbd0446a", "reason": "server_shutdown", "connection_state": "new", "ice_state": "new"}
+{"time": "2026-09-17T11:36:48.786+08:00", "monotonic": 6734.424044, "kind": "peer_ice_state", "peer_id": "06fbd0446a", "state": "closed"}
+{"time": "2026-09-17T11:36:48.786+08:00", "monotonic": 6734.42423, "kind": "peer_connection_state", "peer_id": "06fbd0446a", "state": "closed"}
+{"time": "2026-09-17T11:36:48.787+08:00", "monotonic": 6734.425602, "kind": "server_stopped"}
+{"time": "2026-09-17T11:36:49.722+08:00", "monotonic": 6735.36066, "kind": "offer_answered", "peer_id": "06fbd0446a"}

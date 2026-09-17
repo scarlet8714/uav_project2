@@ -1,6 +1,6 @@
 # Current Status
 
-更新日期：2026-08-05
+更新日期：2026-09-17
 
 ## 目前基準
 
@@ -34,6 +34,8 @@ TensorRT engine 與 JetPack、TensorRT 版本及硬體綁定，不視為跨平�
 | `yolo_final_mjpeg.py` | MJPEG | 有 | 軟體路徑 |
 | `yolo_final_hw.py` | WebRTC | 有 | GStreamer／tcambin 使用 VIC |
 | `yolo_final_jetson_h264.py` | WebRTC H.264 | 有 | VIC + Jetson NVENC |
+| `yolo_final_rtsp.py` | RTSP → WebRTC H.264 | 有 | RTSP NVDEC + YOLO + NVENC |
+| `yolo_final_rtsp_resilient.py` | RTSP → WebRTC H.264 | 有 | 單一 peer + watchdog + 自動重連 |
 
 四個 final 共用 YOLO、GPS、連續幀確認、控制 GUI及截圖核心。
 `yolo_final_hw.py` 只替換相機轉換層；`yolo_final_jetson_h264.py` 再將
@@ -52,6 +54,126 @@ python yolo_final_jetson_h264.py \
 此入口的相機 YUY2→BGRx 使用 Jetson VIC，WebRTC 輸出使用
 `nvv4l2h264enc`、H.264 constrained baseline、3 Mbps CBR。encoder 後
 appsink 為 `drop=false`，避免丟失已編碼參考幀。
+
+## RTSP 攝影機與 20 分鐘耐久測試（2026-09-17）
+
+RTSP 來源：`rtsp://192.168.144.135/live`。實際解碼輸出為
+960×544；攝影機可能以 960×540 為可視尺寸，但 H.264／NVDEC 輸出高度依
+硬體對齊成 544。
+
+### 攝影機 RTSP 行為
+
+- 攝影機約每 49～51 秒主動送出 RTCP `BYE`，隨後關閉 RTSP TCP。
+- `RtspHardwareSource` 收到 EOS 後等待 1 秒重建 pipeline，因此通常凍結
+  約 1～1.5 秒。
+- 純 `rtspsrc ! rtph264depay ! appsink` 測試也能重現約 49 秒 EOS，完全
+  未使用 NVDEC、NVENC、NumPy、YOLO 或 WebRTC。
+- GStreamer 協定 log 明確記錄 `received BYE` 和
+  `server closed connection`，因此固定 EOS 來源是攝影機 RTSP server。
+- 攝影機 SDP 自報 `Ambarella streaming 2012.03.12`。
+- 網頁刷新只重建 WebRTC peer 和 NVENC，不會主動建立 RTSP session；新的
+  RTSP session 來自 Python 啟動或 EOS 後自動重連。
+
+EOS 週期高度規則。20 分鐘測試中，永久停止送流以前的相鄰 EOS 間隔為：
+
+```text
+50.958, 49.901, 50.953, 49.952, 50.980,
+49.966, 51.031, 49.913, 50.955, 49.937,
+50.995, 49.928, 50.951, 49.945, 50.975,
+49.994, 50.958 秒
+```
+
+排除最後進入異常狀態前的 56.097 秒，平均約 50.49 秒。約 49.9／51.0 秒
+交替主要來自每秒一次的健康採樣量化，實際週期接近固定 50.5 秒。
+
+目前不支持一般線材故障是固定 EOS 的主因：
+
+- 線材接觸、CRC 或 packet-loss 問題通常是隨機時間發生，不會固定約
+  50.5 秒。
+- 攝影機送出格式正確、來源 SSRC 合法的 RTCP `BYE` 後才關閉 TCP；線材
+  本身無法產生合法 RTCP BYE。
+- 攝影機 ping 實測 5/5 成功、0% loss，RTT 約 1.60～2.14 ms。
+- 若是攝影機電源線不穩或整機重開，通常會伴隨短暫 ping 中斷，且不太會
+  在斷電前正常送 RTCP BYE；目前未觀察到此型態。
+
+因此固定 EOS 最可能是攝影機 RTSP server 的 session timer、keep-alive
+相容性或韌體問題。線材／TCP batching 仍可能影響先前觀察到的
+100～128 ms 短抖動，但無法合理解釋固定 50 秒 BYE。若要完整排除實體層，
+可換線並同步監控 NIC CRC、drop、link down/up counter；預期換線不會消除
+固定 EOS。
+
+### 20 分鐘真實 Chromium 壓力測試
+
+測試入口為 `yolo_final_rtsp_resilient.py`，測試器為
+`stress_rtsp_yolo_browser.py`。整個測試只啟動一次 Python／RTSP 後端，
+沒有主動重啟 RTSP；Chromium 每 45 秒刷新一次，專門壓測 peer/NVENC 的
+釋放與重建。
+
+| 指標 | 結果 |
+|---|---:|
+| 測試時間 | 1200.7 秒 |
+| Chromium 刷新 | 26 次 |
+| RTSP EOS | 19 次 |
+| WebRTC peer 建立／關閉 | 27／27 |
+| NVENC 建立／關閉 | 27／27 |
+| 同時最大 peer | 1 |
+| NVENC error | 0 |
+| 最後有效 RTSP frame counter | 27156 |
+| 最後有效 YOLO counter | 19256 |
+| 測試結束時無新 YOLO 影格 | 246.7 秒 |
+
+前約 15 分鐘內，每次攝影機 EOS 都能在約 1～2 秒後恢復。約第 932 秒
+首次超過 5 秒沒有新 YOLO 影格；中間短暫收到一張，約第 953 秒後完全
+停止更新，直到測試結束仍未恢復。
+
+故障期間 WebRTC 仍為 `connected`、Chromium `<video>` 仍為
+`readyState=4`，NVENC 也持續成功編碼。原因是 `CameraVideoTrack` 不斷送出
+最後一張舊 YOLO 畫面，所以瀏覽器播放時間繼續增加，但實際內容已凍結。
+重新整理網頁只重建 RTC/NVENC，無法修復已停止提供 RTP 的攝影機。
+
+本輪判定：長時間永久凍結的根因是攝影機 RTSP server 在多次 BYE／session
+重建後停止提供新 RTP，不是 NVENC、WebRTC 或 Orin 效能瓶頸。反覆 session
+可能觸發或暴露攝影機韌體的 session／串流資源清理問題；正常 RTSP server
+不應在約 19 次依序重連後失效。
+
+### Orin 峰值與資源判定
+
+- 最高溫度：64°C
+- RAM 最大使用：約 2615/7607 MB
+- 最高輸入功耗：約 8.95 W（15W mode）
+- GR3D 最高 99%，來自 YOLO TensorRT 推論
+- 無熱節流、記憶體不足、功耗上限或 NVENC failure 證據
+
+### 新增的韌性與診斷功能
+
+`yolo_final_rtsp_resilient.py` 保留原本 `yolo_final_rtsp.py`，另行加入：
+
+- 新 offer 前先關閉舊 peer，任何時刻只允許一個 peer/NVENC session
+- `appsrc block=false`、有限 queue 與 downstream leaky，避免 encoder 永久
+  阻塞 aiortc sender thread
+- NVENC 超過 3 秒沒有 access unit 的 watchdog
+- WebRTC connecting timeout、ICE disconnect grace time 與完整 peer 清理
+- 瀏覽器失敗／無解碼 frame 時建立全新的 peer 並退避重試
+- `/api/health` 分別回報 RTSP、YOLO、peer、NVENC 與最近 encoder error
+- RTSP／YOLO 超過 3 秒沒有新處理幀時記錄 `input_stall`，恢復時記錄
+  `input_recovered`
+- 網頁顯示 `Input stalled`，避免把重送舊畫面誤認為正常
+- JSONL 結構化 event log
+
+20 分鐘實測中，單一 peer 策略成功做到 27 次 peer 與 encoder 完整成對
+建立／關閉，沒有 session 累積或 NVENC error。測試後補上的 input-stall
+顯示與事件判定已通過 Python 語法和 `git diff --check`；尚未再跑第二輪
+完整 20 分鐘。
+
+完整紀錄：
+
+- `diagnostics/DIAGNOSIS.md`
+- `diagnostics/rtsp_protocol_debug.log`
+- `diagnostics/browser_stress_20260917_103556/RESULT.md`
+- `diagnostics/browser_stress_20260917_103556/summary.json`
+- `diagnostics/browser_stress_20260917_103556/stress_events.jsonl`
+- `diagnostics/browser_stress_20260917_103556/server_console.log`
+- `diagnostics/browser_stress_20260917_103556/tegrastats.log`
 
 ## 已完成功能
 

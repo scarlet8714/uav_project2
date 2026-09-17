@@ -1,0 +1,3 @@
+{"time": "2026-09-17T09:56:58.424+08:00", "kind": "camera_probe_start", "seconds": 55, "pipeline": "rtspsrc ! rtph264depay ! appsink"}
+{"time": "2026-09-17T09:57:47.835+08:00", "kind": "camera_pipeline_eos"}
+{"time": "2026-09-17T09:57:47.841+08:00", "kind": "camera_probe_summary", "packets": 1469, "duration_s": 48.89774252299992, "packet_rate": 30.042286702888784, "arrival_gap_max_ms": 128.3591640000168, "arrival_gap_p99_ms": 100.70197300001382, "bytes": 10857010, "exit_code": 0}

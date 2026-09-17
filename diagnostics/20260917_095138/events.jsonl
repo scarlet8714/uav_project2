@@ -1,0 +1,1 @@
+{"time": "2026-09-17T09:51:38.986+08:00", "kind": "camera_probe_start", "seconds": 30, "command": ["ffprobe", "-hide_banner", "-loglevel", "warning", "-rtsp_transport", "tcp", "-select_streams", "v:0", "-show_packets", "-show_entries", "packet=pts_time,size,flags", "-of", "csv=p=0", "rtsp://192.168.144.135/live"]}

@@ -1,0 +1,15 @@
+{
+  "created_at": "2026-09-17T09:57:47.842+08:00",
+  "rtsp_url": "rtsp://192.168.144.135/live",
+  "camera": {
+    "packets": 1469,
+    "duration_s": 48.89774252299992,
+    "packet_rate": 30.042286702888784,
+    "arrival_gap_max_ms": 128.3591640000168,
+    "arrival_gap_p99_ms": 100.70197300001382,
+    "bytes": 10857010,
+    "exit_code": 0
+  },
+  "end_to_end": null,
+  "tegra": null
+}

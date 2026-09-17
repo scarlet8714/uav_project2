@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-09-17T09:55:02.779+08:00",
+  "rtsp_url": "rtsp://192.168.144.135/live",
+  "camera": {
+    "packets": 894,
+    "duration_s": 29.739477615999988,
+    "packet_rate": 30.061052569364012,
+    "arrival_gap_max_ms": 125.33009800000627,
+    "arrival_gap_p99_ms": 100.81699500000241,
+    "bytes": 6604312,
+    "exit_code": 0
+  },
+  "end_to_end": {
+    "server_exit_code": 0,
+    "source_fps": 28.994450128775767,
+    "source_frames": 3472,
+    "webrtc_frames": 3743,
+    "webrtc_fps": 31.230803321686164,
+    "webrtc_gap_max_ms": 45.53313799999614,
+    "webrtc_gap_p99_ms": 41.1195479999833,
+    "webrtc_gaps_over_100ms": 0,
+    "process_cpu_avg_percent": 67.95367428288576,
+    "process_cpu_max_percent": 159.7102870973742,
+    "process_rss_max_bytes": 301010944
+  },
+  "tegra": {
+    "samples": 130,
+    "temperature_max_c": 54.406,
+    "ram_used_max_mb": 1433,
+    "gpu_load_max_percent": 0,
+    "input_power_max_mw": 6634
+  }
+}

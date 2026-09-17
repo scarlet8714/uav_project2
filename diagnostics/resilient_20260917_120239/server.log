@@ -1,0 +1,135 @@
+2026-09-17 12:02:40,025 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:40 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:40,571 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:40 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:42,565 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:42 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:44,580 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:44 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:45,052 INFO aioice.ice Connection(0) Remote candidate "82102ee5-8c0e-4a75-a9f6-91e3e2871687.local" could not be resolved
+2026-09-17 12:02:46,394 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:46 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:47,323 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:47 +0800] "GET / HTTP/1.1" 200 14958 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:47,558 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:47 +0800] "GET /api/camera HTTP/1.1" 200 932 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:49,568 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:49 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:50,064 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:43 +0800] "POST /offer HTTP/1.1" 200 0 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:51,085 INFO aioice.ice Connection(1) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:02:51,587 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:51 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:53,602 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:53 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:55,593 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:55 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:56,095 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:47 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:56,485 INFO aioice.ice Connection(1) Discovered peer reflexive candidate Candidate(5cnTcj0TNR 1 udp 1845501695 100.92.68.122 49668 typ prflx)
+2026-09-17 12:02:56,486 INFO aioice.ice Connection(1) Check CandidatePair(('100.118.127.8', 38356) -> ('100.92.68.122', 49668)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:02:56,587 INFO aioice.ice Connection(1) Check CandidatePair(('100.118.127.8', 38356) -> ('100.92.68.122', 49668)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:02:56,587 INFO aioice.ice Connection(1) ICE completed
+2026-09-17 12:02:57,557 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:57 +0800] "GET /api/health HTTP/1.1" 200 482 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:02:59,744 INFO aioice.ice Connection(2) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:02:59,765 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:59 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:01,562 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:01 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:03,596 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:03 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:04,759 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:02:58 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:05,096 INFO aioice.ice Connection(2) Discovered peer reflexive candidate Candidate(pPb5YKEEVE 1 udp 1845501695 100.92.68.122 49674 typ prflx)
+2026-09-17 12:03:05,096 INFO aioice.ice Connection(2) Check CandidatePair(('100.118.127.8', 41894) -> ('100.92.68.122', 49674)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:05,235 INFO aioice.ice Connection(2) Check CandidatePair(('100.118.127.8', 41894) -> ('100.92.68.122', 49674)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:05,235 INFO aioice.ice Connection(2) ICE completed
+2026-09-17 12:03:05,575 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:05 +0800] "GET /api/health HTTP/1.1" 200 482 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:07,600 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:07 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:07,759 INFO aioice.ice Connection(3) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:09,557 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:09 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:11,566 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:11 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:12,770 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:06 +0800] "POST /offer HTTP/1.1" 200 2150 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:13,273 INFO aioice.ice Connection(3) Discovered peer reflexive candidate Candidate(7ODIVsBafU 1 udp 1845501695 100.92.68.122 63521 typ prflx)
+2026-09-17 12:03:13,273 INFO aioice.ice Connection(3) Check CandidatePair(('100.118.127.8', 52735) -> ('100.92.68.122', 63521)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:13,434 INFO aioice.ice Connection(3) Check CandidatePair(('100.118.127.8', 52735) -> ('100.92.68.122', 63521)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:13,435 INFO aioice.ice Connection(3) ICE completed
+2026-09-17 12:03:13,563 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:13 +0800] "GET /api/health HTTP/1.1" 200 489 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:15,560 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:15 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:16,901 INFO aioice.ice Connection(4) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:17,582 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:17 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:19,561 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:19 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:21,562 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:21 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:21,914 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:15 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:22,333 INFO aioice.ice Connection(4) Discovered peer reflexive candidate Candidate(B0j7HSIspe 1 udp 1845501695 100.92.68.122 63523 typ prflx)
+2026-09-17 12:03:22,333 INFO aioice.ice Connection(4) Check CandidatePair(('100.118.127.8', 41040) -> ('100.92.68.122', 63523)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:22,497 INFO aioice.ice Connection(4) Check CandidatePair(('100.118.127.8', 41040) -> ('100.92.68.122', 63523)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:22,497 INFO aioice.ice Connection(4) ICE completed
+2026-09-17 12:03:23,692 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:23 +0800] "GET /api/health HTTP/1.1" 200 482 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:25,561 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:25 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:25,746 INFO aioice.ice Connection(5) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:27,558 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:27 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:29,570 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:29 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:30,757 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:24 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:31,063 INFO aioice.ice Connection(5) Discovered peer reflexive candidate Candidate(DjuI5JpELP 1 udp 1845501695 100.92.68.122 63531 typ prflx)
+2026-09-17 12:03:31,063 INFO aioice.ice Connection(5) Check CandidatePair(('100.118.127.8', 55553) -> ('100.92.68.122', 63531)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:31,095 INFO aioice.ice Connection(5) Check CandidatePair(('100.118.127.8', 55553) -> ('100.92.68.122', 63531)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:31,095 INFO aioice.ice Connection(5) ICE completed
+2026-09-17 12:03:31,555 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:31 +0800] "GET /api/health HTTP/1.1" 200 482 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:33,557 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:33 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:33,735 INFO aioice.ice Connection(6) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:35,570 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:35 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:37,564 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:37 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:38,745 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:32 +0800] "POST /offer HTTP/1.1" 200 2150 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:39,032 INFO aioice.ice Connection(6) Discovered peer reflexive candidate Candidate(jk5HBK4GIA 1 udp 1845501695 100.92.68.122 63534 typ prflx)
+2026-09-17 12:03:39,032 INFO aioice.ice Connection(6) Check CandidatePair(('100.118.127.8', 53554) -> ('100.92.68.122', 63534)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:39,065 INFO aioice.ice Connection(6) Check CandidatePair(('100.118.127.8', 53554) -> ('100.92.68.122', 63534)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:39,065 INFO aioice.ice Connection(6) ICE completed
+2026-09-17 12:03:39,559 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:39 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:41,558 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:41 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:41,722 INFO aioice.ice Connection(7) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:43,574 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:43 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:45,572 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:45 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:46,733 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:40 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:47,069 INFO aioice.ice Connection(7) Discovered peer reflexive candidate Candidate(Qts0lngQNm 1 udp 1845501695 100.92.68.122 63536 typ prflx)
+2026-09-17 12:03:47,069 INFO aioice.ice Connection(7) Check CandidatePair(('100.118.127.8', 58792) -> ('100.92.68.122', 63536)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:47,103 INFO aioice.ice Connection(7) Check CandidatePair(('100.118.127.8', 58792) -> ('100.92.68.122', 63536)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:47,103 INFO aioice.ice Connection(7) ICE completed
+2026-09-17 12:03:47,557 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:47 +0800] "GET /api/health HTTP/1.1" 200 393 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:49,581 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:49 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:49,717 INFO aioice.ice Connection(8) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:03:51,561 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:51 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:53,589 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:53 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:54,728 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:48 +0800] "POST /offer HTTP/1.1" 200 2151 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:55,089 INFO aioice.ice Connection(8) Discovered peer reflexive candidate Candidate(XKDPxEvKXN 1 udp 1845501695 100.92.68.122 56274 typ prflx)
+2026-09-17 12:03:55,090 INFO aioice.ice Connection(8) Check CandidatePair(('100.118.127.8', 53251) -> ('100.92.68.122', 56274)) State.WAITING -> State.IN_PROGRESS
+2026-09-17 12:03:55,134 INFO aioice.ice Connection(8) Check CandidatePair(('100.118.127.8', 53251) -> ('100.92.68.122', 56274)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-17 12:03:55,134 INFO aioice.ice Connection(8) ICE completed
+2026-09-17 12:03:55,561 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:55 +0800] "GET /api/health HTTP/1.1" 200 482 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:57,581 INFO aiohttp.access 100.92.68.122 [17/Sep/2026:12:03:57 +0800] "GET /api/health HTTP/1.1" 200 476 "http://100.118.127.8:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-17 12:03:57,710 INFO aioice.ice Connection(9) Remote candidate "d5b29e2c-d80b-4d7d-bf23-eb5298cb5abf.local" could not be resolved
+2026-09-17 12:04:00,095 ERROR asyncio Exception in callback Transaction.__retry()
+handle: <TimerHandle when=8364.859559205 Transaction.__retry()>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1062, in sendto
+    self._sock.sendto(data, addr)
+AttributeError: 'NoneType' object has no attribute 'sendto'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/lab508-orin/Desktop/uav_project2/.venv/lib/python3.10/site-packages/aioice/stun.py", line 333, in __retry
+    self.__protocol.send_stun(self.__request, self.__addr)
+  File "/home/lab508-orin/Desktop/uav_project2/.venv/lib/python3.10/site-packages/aioice/ice.py", line 327, in send_stun
+    self.transport.sendto(bytes(message), addr)
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1072, in sendto
+    self._fatal_error(
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 719, in _fatal_error
+    self._loop.call_exception_handler({
+AttributeError: 'NoneType' object has no attribute 'call_exception_handler'
+2026-09-17 12:04:00,131 ERROR asyncio Exception in callback Transaction.__retry()
+handle: <TimerHandle when=8364.859699146 Transaction.__retry()>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1062, in sendto
+    self._sock.sendto(data, addr)
+AttributeError: 'NoneType' object has no attribute 'sendto'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/lab508-orin/Desktop/uav_project2/.venv/lib/python3.10/site-packages/aioice/stun.py", line 333, in __retry
+    self.__protocol.send_stun(self.__request, self.__addr)
+  File "/home/lab508-orin/Desktop/uav_project2/.venv/lib/python3.10/site-packages/aioice/ice.py", line 327, in send_stun
+    self.transport.sendto(bytes(message), addr)
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1072, in sendto
+    self._fatal_error(
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 719, in _fatal_error
+    self._loop.call_exception_handler({
+AttributeError: 'NoneType' object has no attribute 'call_exception_handler'

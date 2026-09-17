@@ -1,0 +1,2 @@
+{"time": "2026-09-17T10:26:06.274+08:00", "kind": "camera_probe_start", "seconds": 10, "pipeline": "rtspsrc ! rtph264depay ! appsink"}
+{"time": "2026-09-17T10:26:16.359+08:00", "kind": "camera_probe_summary", "packets": 0, "duration_s": 0, "requested_duration_s": 10, "packet_rate": 0, "arrival_gap_max_ms": 0, "arrival_gap_p99_ms": 0, "bytes": 0, "exit_code": 0}
