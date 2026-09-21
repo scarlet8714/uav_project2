@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resilient RTSP + YOLO + Jetson H.264 WebRTC server.
+"""Resilient RTSP-over-UDP + YOLO + Jetson H.264 WebRTC server.
 
 This keeps ``yolo_final_rtsp.py`` unchanged and adds the failure containment
 needed for unattended operation: one peer / NVENC session at a time, bounded

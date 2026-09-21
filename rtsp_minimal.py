@@ -1,8 +1,8 @@
-"""Relay an H.264 RTSP stream to a browser with WebRTC on NVIDIA Jetson.
+"""Relay an H.264 RTSP stream over UDP to a browser with WebRTC on Jetson.
 
 Both codec stages are hardware accelerated:
 
-    RTSP / H.264 -> nvv4l2decoder -> BGR frame
+    RTSP-over-UDP / H.264 -> nvv4l2decoder -> BGR frame
     BGR frame -> nvv4l2h264enc -> H.264 RTP / WebRTC
 
 Run:
@@ -132,18 +132,26 @@ def check_gstreamer(Gst):
 
 
 class RtspHardwareSource:
-    """Continuously decode RTSP H.264 with NVDEC and retain the latest frame."""
+    """Continuously decode RTSP H.264 and retain the latest frame."""
 
-    def __init__(self, url, latency_ms, tcp_timeout_seconds):
+    def __init__(
+        self, url, latency_ms, stream_timeout_seconds, transport="udp"
+    ):
         self.Gst = gst_import()
         check_gstreamer(self.Gst)
+        if transport not in ("tcp", "udp"):
+            raise ValueError("RTSP transport must be 'tcp' or 'udp'")
         self.url = url
         self.latency_ms = latency_ms
-        self.tcp_timeout_us = int(tcp_timeout_seconds * 1_000_000)
+        self.transport = transport
+        self.stream_timeout_seconds = stream_timeout_seconds
+        self.stream_timeout_us = int(stream_timeout_seconds * 1_000_000)
         self.pipeline = None
         self.sink = None
         self.frame = None
         self.sequence = 0
+        self.reconnects = 0
+        self.last_frame_at = None
         self.last_error = None
         self.running = True
         self.lock = threading.Lock()
@@ -172,8 +180,14 @@ class RtspHardwareSource:
         rtsp.set_property("location", self.url)
         rtsp.set_property("latency", self.latency_ms)
         rtsp.set_property("drop-on-latency", True)
-        rtsp.set_property("protocols", 4)  # GstRtsp.RTSPLowerTrans.TCP
-        rtsp.set_property("tcp-timeout", self.tcp_timeout_us)
+        if self.transport == "udp":
+            # GstRTSPLowerTrans.UDP. Keeping TCP out of the mask prevents
+            # rtspsrc from silently falling back to an interleaved TCP stream.
+            rtsp.set_property("protocols", 1)
+            rtsp.set_property("timeout", self.stream_timeout_us)
+        else:
+            rtsp.set_property("protocols", 4)
+            rtsp.set_property("tcp-timeout", self.stream_timeout_us)
         capsfilter.set_property(
             "caps", Gst.Caps.from_string("video/x-raw,format=BGRx")
         )
@@ -238,6 +252,7 @@ class RtspHardwareSource:
         with self.lock:
             self.frame = frame
             self.sequence += 1
+            self.last_frame_at = time.monotonic()
             self.last_error = None
 
     def _run_once(self):
@@ -247,6 +262,7 @@ class RtspHardwareSource:
             raise RuntimeError("Cannot start RTSP hardware decoder pipeline")
 
         bus = self.pipeline.get_bus()
+        last_sample_at = time.monotonic()
         while self.running:
             message = bus.pop_filtered(
                 self.Gst.MessageType.ERROR | self.Gst.MessageType.EOS
@@ -260,6 +276,12 @@ class RtspHardwareSource:
             sample = self.sink.emit("try-pull-sample", self.Gst.SECOND)
             if sample is not None:
                 self._read_sample(sample)
+                last_sample_at = time.monotonic()
+            elif time.monotonic() - last_sample_at >= self.stream_timeout_seconds:
+                raise RuntimeError(
+                    f"RTSP {self.transport.upper()} input timed out after "
+                    f"{self.stream_timeout_seconds:g} seconds without a frame"
+                )
 
     def _run(self):
         while self.running:
@@ -267,6 +289,8 @@ class RtspHardwareSource:
                 self._run_once()
             except Exception as exc:
                 if self.running:
+                    with self.lock:
+                        self.reconnects += 1
                     self._set_error(f"{exc}; reconnecting in 1 second")
             finally:
                 if self.pipeline is not None:
@@ -283,9 +307,19 @@ class RtspHardwareSource:
     def status(self):
         with self.lock:
             frame = self.frame
+            last_frame_age = (
+                None
+                if self.last_frame_at is None
+                else max(0.0, time.monotonic() - self.last_frame_at)
+            )
             return {
                 "connected": frame is not None and self.last_error is None,
+                "transport": self.transport,
                 "frames": self.sequence,
+                "reconnects": self.reconnects,
+                "last_frame_age_seconds": (
+                    None if last_frame_age is None else round(last_frame_age, 3)
+                ),
                 "resolution": (
                     None
                     if frame is None
@@ -544,7 +578,7 @@ def build_app():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Jetson hardware H.264 RTSP-to-WebRTC relay"
+        description="Jetson hardware H.264 RTSP-over-UDP-to-WebRTC relay"
     )
     parser.add_argument("--rtsp-url", default=DEFAULT_RTSP_URL)
     parser.add_argument(
@@ -554,7 +588,7 @@ def parse_args():
         "--rtsp-timeout",
         type=float,
         default=5.0,
-        help="RTSP TCP timeout in seconds",
+        help="Reconnect after this many seconds without a UDP video frame",
     )
     parser.add_argument("--fps", type=int, default=DEFAULT_FPS)
     parser.add_argument(
@@ -576,7 +610,7 @@ if __name__ == "__main__":
     Gst = gst_import()
     check_gstreamer(Gst)
     rtcrtpsender.get_encoder = encoder_factory
-    print(f"RTSP input: {settings.rtsp_url}")
+    print(f"RTSP input (UDP transport): {settings.rtsp_url}")
     print("Decode: H.264 -> nvv4l2decoder -> nvvidconv -> BGRx")
     print(
         "Encode: BGRx -> nvvidconv -> NVMM/NV12 -> "

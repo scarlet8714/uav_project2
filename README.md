@@ -61,12 +61,12 @@ gst-inspect-1.0 nvv4l2h264enc
 | `webrtc_yolo_minimal.py` | WebRTC | 無 | OpenCV 或 tcambin 軟體路徑 |
 | `webrtc_yolo_minimal_hw.py` | WebRTC | 無 | GStreamer／tcambin 使用 VIC |
 | `webrtc_yolo_minimal_jetson_h264.py` | WebRTC H.264 | 無 | VIC + Jetson NVENC |
-| `rtsp_minimal.py` | WebRTC H.264 | 無 | RTSP NVDEC + Jetson NVENC |
+| `rtsp_minimal.py` | WebRTC H.264 | 無 | RTSP-over-UDP NVDEC + Jetson NVENC |
 | `yolo_final.py` | WebRTC | 有 | 軟體路徑 |
 | `yolo_final_mjpeg.py` | MJPEG | 有 | 軟體路徑 |
 | `yolo_final_hw.py` | WebRTC | 有 | GStreamer／tcambin 使用 VIC |
 | `yolo_final_jetson_h264.py` | WebRTC H.264 | 有 | VIC + Jetson NVENC |
-| `yolo_final_rtsp.py` | WebRTC H.264 | 有 | RTSP NVDEC + Jetson NVENC |
+| `yolo_final_rtsp.py` | WebRTC H.264 | 有 | RTSP-over-UDP NVDEC + Jetson NVENC |
 
 YOLO 入口提供平滑 FPS 疊字及「立即儲存 5 張」功能。RTSP 不提供實體
 相機控制，因此 RTSP 入口的右側面板會停用曝光、增益及對焦等項目。
@@ -170,6 +170,19 @@ YOLO BGR → BGRx → nvvidconv → NVMM NV12
 encoder 後使用 `appsink max-buffers=1 drop=false`，避免丟失 H.264 參考幀
 造成短暫破圖。
 
+### WebRTC minimal + RTSP-over-UDP
+
+```bash
+python rtsp_minimal.py \
+  --rtsp-url rtsp://192.168.144.135/live \
+  --rtsp-timeout 5
+```
+
+此入口固定以 UDP transport 接收 RTSP H.264，不會退回 TCP。若連續
+`--rtsp-timeout` 秒沒有收到影格，會保留 WebRTC 連線、重建輸入 pipeline，
+並在 UDP 畫面恢復後繼續送出；`/status` 會回報 `transport`、`reconnects`
+與 `last_frame_age_seconds`。
+
 ## Final
 
 Final 共用以下功能：
@@ -254,7 +267,7 @@ python yolo_final_jetson_h264.py \
 GPS、temporal confirmation、控制 API、截圖與 shutdown 都保留。預設 H.264
 為 3 Mbps CBR，encoded appsink 為 `drop=false`。
 
-### WebRTC final + RTSP 硬體編解碼
+### WebRTC final + RTSP-over-UDP 硬體編解碼
 
 ```bash
 python yolo_final_rtsp.py \
@@ -263,8 +276,10 @@ python yolo_final_rtsp.py \
 ```
 
 此入口保留 final 的 YOLO、GPS、temporal confirmation、FPS 疊字與五張
-截圖功能。RTSP H.264 輸入使用 `nvv4l2decoder`，YOLO 標註後則使用
+截圖功能。RTSP H.264 輸入固定使用 UDP transport 與 `nvv4l2decoder`，
+YOLO 標註後則使用
 `nvv4l2h264enc` 重新編碼成 H.264 WebRTC；RTSP 斷線時會每秒自動重連。
+若連續 `--rtsp-timeout` 秒沒有收到影格，也會重建輸入 pipeline。
 
 ```text
 RTSP H.264 → nvv4l2decoder → nvvidconv → BGR → YOLO/GPS

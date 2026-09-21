@@ -1,10 +1,11 @@
-"""YOLO/GPS WebRTC relay using RTSP plus Jetson hardware codecs.
+"""YOLO/GPS WebRTC relay using RTSP-over-UDP plus Jetson hardware codecs.
 
 This entry point retains the detection, temporal confirmation, GPS target
 projection, FPS overlay, frame capture, and WebRTC behavior from
 ``yolo_final.py``.  The video path is:
 
-    RTSP H.264 -> nvv4l2decoder -> nvvidconv -> BGR -> YOLO / GPS overlay
+    RTSP-over-UDP H.264 -> nvv4l2decoder -> nvvidconv -> BGR
+    -> YOLO / GPS overlay
     -> nvvidconv -> NVMM/NV12 -> nvv4l2h264enc -> H.264 WebRTC
 
 Run:
@@ -37,6 +38,7 @@ class RtspCameraManager:
             settings.rtsp_url,
             settings.rtsp_latency,
             settings.rtsp_timeout,
+            transport="udp",
         )
         self.delivered_sequence = 0
         self.running = True
@@ -91,7 +93,9 @@ def create_rtsp_camera(settings):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="YOLO GPS RTSP-to-WebRTC with Jetson H.264 hardware codecs"
+        description=(
+            "YOLO GPS RTSP-over-UDP-to-WebRTC with Jetson H.264 hardware codecs"
+        )
     )
     parser.add_argument(
         "--rtsp-url",
@@ -108,7 +112,10 @@ def parse_args():
         "--rtsp-timeout",
         type=float,
         default=5.0,
-        help="RTSP TCP timeout in seconds (default: %(default)s)",
+        help=(
+            "reconnect after this many seconds without a UDP video frame "
+            "(default: %(default)s)"
+        ),
     )
     parser.add_argument(
         "--fps",
