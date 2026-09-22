@@ -1,0 +1,21 @@
+WARNING ⚠️ torchvision==0.18 is incompatible with torch==2.4.
+Run 'pip install torchvision==0.19' to fix torchvision or 'pip install -U torch torchvision' to update both.
+For a full compatibility table see https://github.com/pytorch/vision#installation
+Diagnostic log directory: diagnostics/browser_stress_20260922_192710/server_diagnostics/resilient_20260922_192713
+Open http://<device-ip>:8080 in a browser
+[YOLO] Loading model: yolo11s.engine
+======== Running on http://0.0.0.0:8080 ========
+(Press CTRL+C to quit)
+Opening in BLOCKING MODE 
+2026-09-22 19:27:14,130 INFO aiohttp.access 127.0.0.1 [22/Sep/2026:19:27:14 +0800] "GET /api/health HTTP/1.1" 200 462 "-" "Python/3.10 aiohttp/3.14.3"
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+Loading yolo11s.engine for TensorRT inference...
+[09/22/2026-19:27:14] [TRT] [I] Loaded engine size: 22 MiB
+[09/22/2026-19:27:14] [TRT] [W] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.
+2026-09-22 19:27:15,136 INFO aiohttp.access 127.0.0.1 [22/Sep/2026:19:27:15 +0800] "GET /api/health HTTP/1.1" 200 468 "-" "Python/3.10 aiohttp/3.14.3"
+[09/22/2026-19:27:15] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in engine deserialization: CPU +0, GPU +18, now: CPU 0, GPU 18 (MiB)
+[09/22/2026-19:27:15] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +22, now: CPU 0, GPU 40 (MiB)
+2026-09-22 19:27:16,139 INFO aiohttp.access 127.0.0.1 [22/Sep/2026:19:27:16 +0800] "GET /api/health HTTP/1.1" 200 468 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-22 19:27:17,143 INFO aiohttp.access 127.0.0.1 [22/Sep/2026:19:27:17 +0800] "GET /api/health HTTP/1.1" 200 468 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-22 19:27:18,147 INFO aiohttp.access 127.0.0.1 [22/Sep/2026:19:27:18 +0800] "GET /api/health HTTP/1.1" 200 468 "-" "Python/3.10 aiohttp/3.14.3"

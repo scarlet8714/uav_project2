@@ -48,7 +48,7 @@ CAMERA_READ_TIMEOUT_SEC = 2.0
 GSTREAMER_JPEG_DECODER = "jpegdec"
 GSTREAMER_DROP_OLD_FRAMES = True
 
-MODEL_PATH = "11s_car_544_960.engine"
+MODEL_PATH = "yolo11s.engine"
 YOLO_IMGSZ = (544, 960)
 YOLO_CONF = 0.4
 YOLO_IOU = 0.45
@@ -486,14 +486,18 @@ class YoloGpsProcessor:
         print(f"[YOLO] Loading model: {settings.model_path}")
         self.model = YOLO(settings.model_path, task="detect")
         self.camera_manager, self.camera = create_camera(settings)
-        self.gps = GPSReader(port=GPS_PORT, baudrate=GPS_BAUDRATE)
+        self.gps = GPSReader(
+            port=getattr(settings, "gps_port", GPS_PORT),
+            baudrate=GPS_BAUDRATE,
+        )
         self.tracker = TargetTracker()
         self.frame_capture = FrameCapture()
         self.fps_overlay = FpsOverlay()
         self.frame = None
         self.lock = threading.Lock()
         self.running = True
-        self.gps.start()
+        if not getattr(settings, "no_gps", False):
+            self.gps.start()
         self.thread = threading.Thread(
             target=self._run, name="YoloGpsThread", daemon=True
         )
@@ -741,6 +745,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="YOLO GPS video streaming over WebRTC"
     )
+    parser.add_argument("--gps-port", default=GPS_PORT, help="GPS serial device path")
     parser.add_argument(
         "--camera-backend",
         choices=("opencv", "gstreamer", "tiscamera"),

@@ -1,0 +1,209 @@
+[
+  {
+    "directory": "diagnostics/browser_stress_20260917_103556",
+    "samples": 1178,
+    "first_sample_time": "2026-09-17T10:36:12.059+08:00",
+    "last_sample_time": "2026-09-17T10:56:11.135+08:00",
+    "sample_span_s": 1199.076,
+    "rates_fps": {
+      "rtsp": 22.4256,
+      "yolo": 15.9414
+    },
+    "first_900s_rates_fps": {
+      "rtsp": 29.0066,
+      "yolo": 20.552
+    },
+    "first_300s_rates_fps": {
+      "rtsp": 28.9687,
+      "yolo": 20.4177
+    },
+    "last_rtsp": {
+      "connected": false,
+      "frames": 27156,
+      "resolution": "960x544",
+      "error": "RTSP pipeline reached end of stream; reconnecting in 1 second"
+    },
+    "last_yolo": {
+      "processed_frames": 19256,
+      "last_frame_age_s": 246.721,
+      "last_error": null
+    },
+    "yolo_age_s": {
+      "mean": 25.8513,
+      "p99": 234.525,
+      "max": 246.721
+    },
+    "rtsp_age_s": null,
+    "yolo_stale_ge5s_samples": 259,
+    "yolo_stale_ge5s_approx_seconds": 262.308,
+    "first_yolo_stale_ge5s_elapsed_s": 932.32,
+    "eos_console_count": 19,
+    "udp_timeout_console_count": 0,
+    "estimated_final_yolo_frame_elapsed_s": 952.987,
+    "browser_refreshes": 26,
+    "browser_refresh_recovered": 26,
+    "browser_refresh_to_playing_s": {
+      "mean": 7.1245,
+      "p99": 7.143,
+      "max": 7.143
+    },
+    "max_peers": 1,
+    "max_encoders": 1,
+    "encoder_errors_at_end": [],
+    "server_event_counts": {
+      "configured": 1,
+      "server_started": 1,
+      "health_sample": 1208,
+      "peer_created": 27,
+      "offer_answered": 27,
+      "peer_ice_state": 81,
+      "peer_connection_state": 81,
+      "encoder_created": 27,
+      "peer_closing": 27,
+      "encoder_closed": 27,
+      "server_stopped": 1
+    },
+    "configured": {
+      "rtsp_url": "rtsp://192.168.144.135/live",
+      "fps": 30,
+      "model_path": "11s_car_544_960.engine",
+      "h264_bitrate": 3000000,
+      "port": 8080
+    },
+    "resources": {
+      "ram_mb": {
+        "mean": 2511.6237,
+        "p99": 2608.0,
+        "max": 2615.0
+      },
+      "swap_mb": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      },
+      "temperature_c": {
+        "mean": 60.6721,
+        "p99": 63.781,
+        "max": 64.0
+      },
+      "vdd_in_mw": {
+        "mean": 7307.861,
+        "p99": 8855.0,
+        "max": 8949.0
+      },
+      "gr3d_percent": {
+        "mean": 44.9595,
+        "p99": 99.0,
+        "max": 99.0
+      }
+    }
+  },
+  {
+    "directory": "diagnostics/browser_stress_20260922_194858",
+    "samples": 1183,
+    "first_sample_time": "2026-09-22T19:49:15.452+08:00",
+    "last_sample_time": "2026-09-22T20:09:15.375+08:00",
+    "sample_span_s": 1199.923,
+    "rates_fps": {
+      "rtsp": 26.5859,
+      "yolo": 23.2882
+    },
+    "first_900s_rates_fps": {
+      "rtsp": 29.9637,
+      "yolo": 26.2262
+    },
+    "first_300s_rates_fps": {
+      "rtsp": 29.9563,
+      "yolo": 26.741
+    },
+    "last_rtsp": {
+      "connected": false,
+      "transport": "udp",
+      "frames": 32273,
+      "reconnects": 22,
+      "last_frame_age_seconds": 135.292,
+      "resolution": "960x544",
+      "error": "RTSP UDP input timed out after 5 seconds without a frame; reconnecting in 1 second"
+    },
+    "last_yolo": {
+      "processed_frames": 28203,
+      "last_frame_age_s": 135.235,
+      "last_error": null
+    },
+    "yolo_age_s": {
+      "mean": 7.6944,
+      "p99": 123.063,
+      "max": 135.235
+    },
+    "rtsp_age_s": {
+      "mean": 7.7004,
+      "p99": 123.121,
+      "max": 135.292
+    },
+    "yolo_stale_ge5s_samples": 129,
+    "yolo_stale_ge5s_approx_seconds": 129.845,
+    "first_yolo_stale_ge5s_elapsed_s": 1070.089,
+    "eos_console_count": 0,
+    "udp_timeout_console_count": 22,
+    "estimated_final_yolo_frame_elapsed_s": 1064.699,
+    "browser_refreshes": 26,
+    "browser_refresh_recovered": 26,
+    "browser_refresh_to_playing_s": {
+      "mean": 6.0871,
+      "p99": 6.095,
+      "max": 6.096
+    },
+    "max_peers": 1,
+    "max_encoders": 1,
+    "encoder_errors_at_end": [],
+    "server_event_counts": {
+      "configured": 1,
+      "server_started": 1,
+      "input_stall": 2,
+      "health_sample": 1212,
+      "input_recovered": 1,
+      "peer_created": 27,
+      "offer_answered": 27,
+      "peer_ice_state": 81,
+      "peer_connection_state": 81,
+      "encoder_created": 27,
+      "peer_closing": 27,
+      "encoder_closed": 27,
+      "server_stopped": 1
+    },
+    "configured": {
+      "rtsp_url": "rtsp://192.168.144.135/live",
+      "fps": 30,
+      "model_path": "yolo11s.engine",
+      "h264_bitrate": 3000000,
+      "port": 8080
+    },
+    "resources": {
+      "ram_mb": {
+        "mean": 4548.3196,
+        "p99": 4641.0,
+        "max": 4676.0
+      },
+      "swap_mb": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0.0
+      },
+      "temperature_c": {
+        "mean": 42.8447,
+        "p99": 45.375,
+        "max": 45.656
+      },
+      "vdd_in_mw": {
+        "mean": 9247.6969,
+        "p99": 11628.0,
+        "max": 13741.0
+      },
+      "gr3d_percent": {
+        "mean": 59.7911,
+        "p99": 98.0,
+        "max": 98.0
+      }
+    }
+  }
+]

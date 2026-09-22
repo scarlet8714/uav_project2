@@ -1,0 +1,7 @@
+{
+  "status": "stopped_by_user_confounded",
+  "recorded_at": "2026-09-22T19:47:14.039368+08:00",
+  "last_sample_elapsed_s": 912.038,
+  "reason": "User reported moving/touching the mainboard during the test; timing and current hardware state uncertain. Stop requested before completing 20 minutes.",
+  "validity": "Cannot attribute the observed stall to UDP or compare long-duration reliability against the historical TCP run. Pre-stall observations are descriptive only."
+}

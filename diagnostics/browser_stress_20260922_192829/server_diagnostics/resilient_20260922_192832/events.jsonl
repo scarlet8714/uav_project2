@@ -1,0 +1,15 @@
+{"time": "2026-09-22T19:28:32.685+08:00", "monotonic": 1590.291442, "kind": "configured", "settings": {"rtsp_url": "rtsp://192.168.144.135/live", "fps": 30, "model_path": "yolo11s.engine", "h264_bitrate": 3000000, "port": 8080}}
+{"time": "2026-09-22T19:28:32.918+08:00", "monotonic": 1590.525192, "kind": "server_started"}
+{"time": "2026-09-22T19:28:33.949+08:00", "monotonic": 1591.556308, "kind": "input_stall", "yolo_age_s": null}
+{"time": "2026-09-22T19:28:33.951+08:00", "monotonic": 1591.557617, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:35.084+08:00", "monotonic": 1592.69058, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:36.089+08:00", "monotonic": 1593.6962, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:37.091+08:00", "monotonic": 1594.697918, "kind": "input_recovered", "yolo_age_s": 0.03}
+{"time": "2026-09-22T19:28:37.092+08:00", "monotonic": 1594.699138, "kind": "health_sample", "yolo_frames": 11, "yolo_age_s": 0.03, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:38.095+08:00", "monotonic": 1595.702345, "kind": "health_sample", "yolo_frames": 37, "yolo_age_s": 0.002, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:39.097+08:00", "monotonic": 1596.703845, "kind": "health_sample", "yolo_frames": 64, "yolo_age_s": 0.017, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:40.099+08:00", "monotonic": 1597.705645, "kind": "health_sample", "yolo_frames": 91, "yolo_age_s": 0.027, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:41.100+08:00", "monotonic": 1598.706384, "kind": "health_sample", "yolo_frames": 121, "yolo_age_s": 0.009, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:42.102+08:00", "monotonic": 1599.708557, "kind": "health_sample", "yolo_frames": 150, "yolo_age_s": 0.005, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:43.104+08:00", "monotonic": 1600.710365, "kind": "health_sample", "yolo_frames": 178, "yolo_age_s": 0.004, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-22T19:28:43.671+08:00", "monotonic": 1601.277626, "kind": "server_stopped"}

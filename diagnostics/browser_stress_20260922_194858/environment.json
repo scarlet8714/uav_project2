@@ -1,0 +1,20 @@
+{
+  "recorded_at": "2026-09-22T19:49:52.876813+08:00",
+  "platform": "Linux-5.15.136-tegra-aarch64-with-glibc2.35",
+  "python": "3.10.12",
+  "command": "python3 -u stress_rtsp_yolo_browser.py --minutes 20 --refresh-seconds 45",
+  "hashes": {
+    "rtsp_minimal.py": "4e7bc0ac91017feb8a9134685afa05f011181eda8385b31607e08ca6379b31d3",
+    "yolo_final_rtsp.py": "1c4b3b4bbdcf43cb4b83b5015e4b9de6a393f1515ff15ee752ee1209ad48cf5e",
+    "yolo_final_rtsp_resilient.py": "ca141ac801e05b9a55b563bb6fa76bc6533b77998629601f38f2d446b9b12251",
+    "yolo_final.py": "e1c58e81bf7731777cf434493f7b338ec98828926266a17efec78f4f9146bc32",
+    "stress_rtsp_yolo_browser.py": "40d0d7731070eab54f3f0cdf45c0c42899676b0b8a09e2248aac2a63dc93dcfd",
+    "yolo11s.engine": "9feac84d4a0ca73510b60ef881066429eb344cf5a6fc3b318821b98aaaaad49b"
+  },
+  "excluded_run": "browser_stress_20260922_193112: user moved mainboard; stopped and invalidated",
+  "device_model": "NVIDIA Jetson Orin NX Engineering Reference Developer Kit",
+  "jetson_release": "# R36 (release), REVISION: 3.0, GCID: 36191598, BOARD: generic, EABI: aarch64, DATE: Mon May  6 17:34:21 UTC 2024\n# KERNEL_VARIANT: oot\nTARGET_USERSPACE_LIB_DIR=nvidia\nTARGET_USERSPACE_LIB_DIR_PATH=usr/lib/aarch64-linux-gnu/nvidia",
+  "google-chrome --version": "Google Chrome 152.0.7977.82 \n",
+  "gst-launch-1.0 --version": "gst-launch-1.0 version 1.20.3\nGStreamer 1.20.3\nhttps://launchpad.net/distros/ubuntu/+source/gstreamer1.0\n",
+  "nvpmodel -q": "NV Power Mode: MAXN\n0\n"
+}

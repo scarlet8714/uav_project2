@@ -1,0 +1,3 @@
+# Install with --no-deps AFTER requirements.txt; see README.md.
+# Ordinary dependency resolution installs a PyPI OpenCV over Jetson's build.
+ultralytics==8.4.108

@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-09-22T19:39:29.262531+08:00",
+  "ping": {
+    "sent": 5,
+    "received": 5,
+    "loss_percent": 0,
+    "rtt_min_ms": 1.245,
+    "rtt_avg_ms": 1.698,
+    "rtt_max_ms": 1.932
+  },
+  "route": "192.168.144.135 dev eth0 src 192.168.144.130",
+  "rtsp_socket": "ESTAB 192.168.144.130:48880 -> 192.168.144.135:554 pid=11275",
+  "eth0_counters": {
+    "tx_errors": 0,
+    "rx_length_errors": 0,
+    "rx_packets": 56803,
+    "tx_carrier_errors": 0,
+    "tx_dropped": 0,
+    "rx_missed_errors": 0,
+    "rx_over_errors": 0,
+    "tx_aborted_errors": 0,
+    "rx_crc_errors": 0,
+    "rx_frame_errors": 0,
+    "rx_nohandler": 0,
+    "tx_fifo_errors": 0,
+    "multicast": 0,
+    "tx_packets": 1225,
+    "tx_window_errors": 0,
+    "rx_bytes": 73528806,
+    "collisions": 0,
+    "rx_dropped": 0,
+    "tx_bytes": 155838,
+    "tx_heartbeat_errors": 0,
+    "rx_fifo_errors": 0,
+    "rx_errors": 0,
+    "tx_compressed": 0,
+    "rx_compressed": 0
+  }
+}

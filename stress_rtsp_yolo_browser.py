@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import sys
 import time
 
 import aiohttp
@@ -76,7 +77,7 @@ async def cdp_call(session, websocket_url, method, params=None):
     async with session.ws_connect(websocket_url, timeout=5) as socket:
         await socket.send_json({"id": 1, "method": method, "params": params or {}})
         while True:
-            message = await socket.receive(timeout=5)
+            message = await socket.receive(timeout=60 if method == "Page.navigate" else 5)
             if message.type == aiohttp.WSMsgType.TEXT:
                 data = json.loads(message.data)
                 if data.get("id") == 1:
@@ -139,7 +140,7 @@ async def main():
     started = time.monotonic()
     try:
         server = await asyncio.create_subprocess_exec(
-            "./.venv/bin/python", "-u", "yolo_final_rtsp_resilient.py",
+            sys.executable, "-u", "yolo_final_rtsp_resilient.py",
             "--rtsp-url", args.rtsp_url, "--port", str(args.port),
             "--log-dir", str(run_dir / "server_diagnostics"),
             stdout=server_file, stderr=asyncio.subprocess.STDOUT,
@@ -155,7 +156,8 @@ async def main():
             initial = await wait_for_healthy(session, health_url, log)
             log.write("server_healthy", health=initial)
 
-            chromium_path = shutil.which("chromium") or shutil.which("chromium-browser")
+            chromium_path = (shutil.which("chromium") or shutil.which("chromium-browser")
+                             or shutil.which("google-chrome"))
             if chromium_path is None:
                 raise RuntimeError("Chromium executable not found")
             runtime_dir = Path(f"/tmp/chromium-runtime-{os.getpid()}")
@@ -165,6 +167,7 @@ async def main():
             chromium = await asyncio.create_subprocess_exec(
                 chromium_path,
                 "--headless=new", "--no-sandbox", "--disable-dev-shm-usage",
+                "--disable-gpu", "--no-proxy-server", "--no-first-run",
                 "--autoplay-policy=no-user-gesture-required",
                 f"--remote-debugging-port={args.debug_port}",
                 f"--user-data-dir={profile_dir}",
@@ -181,6 +184,20 @@ async def main():
                 await asyncio.sleep(1)
             else:
                 raise RuntimeError("Chromium DevTools did not start")
+
+            target = await devtools_target(session, args.debug_port)
+            await cdp_call(session, target["webSocketDebuggerUrl"], "Page.navigate",
+                           {"url": f"http://127.0.0.1:{args.port}/"})
+            for _ in range(60):
+                snapshot = await browser_snapshot(session, args.debug_port)
+                if (snapshot.get("peerState") == "connected"
+                        and (snapshot.get("videoCurrentTime") or 0) > 0
+                        and (snapshot.get("videoWidth") or 0) > 0):
+                    log.write("browser_playing", browser=snapshot)
+                    break
+                await asyncio.sleep(1)
+            else:
+                raise RuntimeError(f"Chromium did not start playback: {snapshot}")
 
             test_started = time.monotonic()
             end_at = test_started + args.minutes * 60

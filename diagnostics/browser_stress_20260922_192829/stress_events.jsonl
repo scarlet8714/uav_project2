@@ -1,0 +1,2 @@
+{"time": "2026-09-22T19:28:37.470+08:00", "monotonic": 1595.076682, "kind": "server_healthy", "health": {"healthy": true, "rtsp": {"connected": true, "transport": "udp", "frames": 105, "reconnects": 0, "last_frame_age_seconds": 0.019, "resolution": "960x544", "error": null}, "yolo": {"processed_frames": 22, "last_frame_age_s": 0.011, "last_error": null}, "peers": [], "encoders": [], "recent_encoder_errors": []}}
+{"time": "2026-09-22T19:28:43.491+08:00", "monotonic": 1601.097952, "kind": "fatal", "error": "TimeoutError()", "elapsed_s": 14.073}

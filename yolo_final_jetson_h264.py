@@ -78,6 +78,13 @@ def parse_args():
         )
     )
     parser.add_argument(
+        "--gps-port", default=original.GPS_PORT, help="GPS serial device path",
+    )
+    parser.add_argument(
+        "--no-gps", action="store_true",
+        help="disable GPS serial reading (camera/inference/streaming remain available)",
+    )
+    parser.add_argument(
         "--camera-backend",
         choices=("opencv", "gstreamer", "tiscamera"),
         default=original.CAMERA_BACKEND,

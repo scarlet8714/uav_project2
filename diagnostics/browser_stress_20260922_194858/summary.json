@@ -1,0 +1,16 @@
+{
+  "requested_minutes": 20.0,
+  "elapsed_s": 1200.942,
+  "samples": 1183,
+  "browser_refreshes": 26,
+  "max_server_peers": 1,
+  "connected_samples": 1053,
+  "video_advancing_samples": 1052,
+  "encoder_errors": 0,
+  "input_stalled_at_end": true,
+  "observed_errors": [
+    "input stalled near 1070.089s (YOLO age=5.389)"
+  ],
+  "server_exit_code_before_cleanup": null,
+  "chromium_exit_code_before_cleanup": null
+}
