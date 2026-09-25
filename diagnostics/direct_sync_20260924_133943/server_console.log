@@ -1,0 +1,8 @@
+WARNING ⚠️ torchvision==0.18 is incompatible with torch==2.4.
+Run 'pip install torchvision==0.19' to fix torchvision or 'pip install -U torch torchvision' to update both.
+For a full compatibility table see https://github.com/pytorch/vision#installation
+Matplotlib created a temporary config/cache directory at /tmp/matplotlib-x23h7q6j because the default path (/home/jetson/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+Event log: diagnostics/direct_sync_20260924_133943/direct_20260924_133950
+Open http://<device-ip>:18085/
+======== Running on http://127.0.0.1:18085 ========
+(Press CTRL+C to quit)

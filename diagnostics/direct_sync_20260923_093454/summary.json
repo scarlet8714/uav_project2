@@ -1,0 +1,25 @@
+{
+  "targetDurationS": 6.0,
+  "observedDurationS": 0,
+  "samples": 0,
+  "connectedSamples": 0,
+  "healthySamples": 0,
+  "matchedPtsSamples": 0,
+  "gapMs": {
+    "median": null,
+    "p95": null,
+    "p99": null,
+    "max": null,
+    "over100": 0,
+    "over250": 0,
+    "over500": 0
+  },
+  "videoPtsBackwards": [],
+  "videoFreezeSamples": [],
+  "rtspReconnectsEnd": null,
+  "rtspPacketsEnd": null,
+  "yoloFramesEnd": null,
+  "failure": "RuntimeError('server did not become healthy within 90 seconds')",
+  "serverExitCode": 0,
+  "chromeExitCode": null
+}

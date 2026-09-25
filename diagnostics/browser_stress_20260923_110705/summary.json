@@ -1,0 +1,14 @@
+{
+  "requested_minutes": 1.0,
+  "elapsed_s": 60.874,
+  "samples": 60,
+  "browser_refreshes": 0,
+  "max_server_peers": 1,
+  "connected_samples": 44,
+  "video_advancing_samples": 37,
+  "encoder_errors": 0,
+  "input_stalled_at_end": false,
+  "observed_errors": [],
+  "server_exit_code_before_cleanup": null,
+  "chromium_exit_code_before_cleanup": null
+}

@@ -1,0 +1,81 @@
+{"time": "2026-09-23T11:35:08.695+08:00", "monotonic": 139.93541, "kind": "configured", "settings": {"rtsp_url": "rtsp://192.168.144.135/live", "fps": 30, "model_path": "yolo11s.engine", "h264_bitrate": 3000000, "port": 8080}}
+{"time": "2026-09-23T11:35:08.852+08:00", "monotonic": 140.092543, "kind": "server_started"}
+{"time": "2026-09-23T11:35:09.375+08:00", "monotonic": 140.615229, "kind": "peer_created", "peer_id": "ec8874e136", "remote": "100.83.253.28"}
+{"time": "2026-09-23T11:35:09.854+08:00", "monotonic": 141.094056, "kind": "input_stall", "yolo_age_s": null}
+{"time": "2026-09-23T11:35:09.854+08:00", "monotonic": 141.094306, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:10.855+08:00", "monotonic": 142.095551, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:11.856+08:00", "monotonic": 143.096563, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:12.859+08:00", "monotonic": 144.099258, "kind": "health_sample", "yolo_frames": 0, "yolo_age_s": null, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:13.860+08:00", "monotonic": 145.100384, "kind": "input_recovered", "yolo_age_s": 0.025}
+{"time": "2026-09-23T11:35:13.860+08:00", "monotonic": 145.100766, "kind": "health_sample", "yolo_frames": 8, "yolo_age_s": 0.025, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:14.865+08:00", "monotonic": 146.1057, "kind": "health_sample", "yolo_frames": 32, "yolo_age_s": 0.028, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:15.396+08:00", "monotonic": 146.636343, "kind": "offer_answered", "peer_id": "ec8874e136"}
+{"time": "2026-09-23T11:35:15.400+08:00", "monotonic": 146.640642, "kind": "peer_ice_state", "peer_id": "ec8874e136", "state": "checking"}
+{"time": "2026-09-23T11:35:15.401+08:00", "monotonic": 146.640952, "kind": "peer_connection_state", "peer_id": "ec8874e136", "state": "connecting"}
+{"time": "2026-09-23T11:35:15.613+08:00", "monotonic": 146.85379, "kind": "peer_ice_state", "peer_id": "ec8874e136", "state": "completed"}
+{"time": "2026-09-23T11:35:15.773+08:00", "monotonic": 147.013308, "kind": "peer_connection_state", "peer_id": "ec8874e136", "state": "connected"}
+{"time": "2026-09-23T11:35:15.782+08:00", "monotonic": 147.022755, "kind": "encoder_created", "encoder_id": "3fcf818ed0", "bitrate": 3000000}
+{"time": "2026-09-23T11:35:15.867+08:00", "monotonic": 147.10766, "kind": "health_sample", "yolo_frames": 56, "yolo_age_s": 0.034, "peer_count": 1, "peers": [{"id": "ec8874e136", "state": "connected", "ice": "completed"}], "encoders": [{"id": "3fcf818ed0", "input_frames": 4, "output_access_units": 0, "last_input_age_s": 0.004, "last_output_age_s": null, "error": null, "pipeline_active": true}]}
+{"time": "2026-09-23T11:35:15.912+08:00", "monotonic": 147.152215, "kind": "peer_ice_state", "peer_id": "ec8874e136", "state": "closed"}
+{"time": "2026-09-23T11:35:15.912+08:00", "monotonic": 147.152415, "kind": "peer_closing", "peer_id": "ec8874e136", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-23T11:35:15.912+08:00", "monotonic": 147.152562, "kind": "peer_connection_state", "peer_id": "ec8874e136", "state": "closed"}
+{"time": "2026-09-23T11:35:15.922+08:00", "monotonic": 147.162256, "kind": "encoder_closed", "encoder_id": "3fcf818ed0", "input_frames": 10, "output_access_units": 5, "error": null}
+{"time": "2026-09-23T11:35:16.871+08:00", "monotonic": 148.111494, "kind": "health_sample", "yolo_frames": 81, "yolo_age_s": 0.017, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-23T11:35:17.256+08:00", "monotonic": 148.495973, "kind": "peer_created", "peer_id": "146570741b", "remote": "100.83.253.28"}
+{"time": "2026-09-23T11:35:17.873+08:00", "monotonic": 149.112939, "kind": "health_sample", "yolo_frames": 105, "yolo_age_s": 0.015, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:18.874+08:00", "monotonic": 150.114787, "kind": "health_sample", "yolo_frames": 129, "yolo_age_s": 0.013, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:19.876+08:00", "monotonic": 151.11634, "kind": "health_sample", "yolo_frames": 153, "yolo_age_s": 0.021, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:20.878+08:00", "monotonic": 152.118487, "kind": "health_sample", "yolo_frames": 176, "yolo_age_s": 0.026, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:21.880+08:00", "monotonic": 153.120763, "kind": "health_sample", "yolo_frames": 200, "yolo_age_s": 0.019, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:22.882+08:00", "monotonic": 154.122659, "kind": "health_sample", "yolo_frames": 224, "yolo_age_s": 0.029, "peer_count": 1, "peers": [{"id": "146570741b", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:23.284+08:00", "monotonic": 154.524407, "kind": "offer_answered", "peer_id": "146570741b"}
+{"time": "2026-09-23T11:35:23.287+08:00", "monotonic": 154.527489, "kind": "peer_ice_state", "peer_id": "146570741b", "state": "checking"}
+{"time": "2026-09-23T11:35:23.287+08:00", "monotonic": 154.527767, "kind": "peer_connection_state", "peer_id": "146570741b", "state": "connecting"}
+{"time": "2026-09-23T11:35:23.499+08:00", "monotonic": 154.739023, "kind": "peer_ice_state", "peer_id": "146570741b", "state": "completed"}
+{"time": "2026-09-23T11:35:23.646+08:00", "monotonic": 154.885912, "kind": "peer_connection_state", "peer_id": "146570741b", "state": "connected"}
+{"time": "2026-09-23T11:35:23.650+08:00", "monotonic": 154.890804, "kind": "encoder_created", "encoder_id": "e52a9ea4ad", "bitrate": 3000000}
+{"time": "2026-09-23T11:35:23.883+08:00", "monotonic": 155.123528, "kind": "health_sample", "yolo_frames": 247, "yolo_age_s": 0.038, "peer_count": 1, "peers": [{"id": "146570741b", "state": "connected", "ice": "completed"}], "encoders": [{"id": "e52a9ea4ad", "input_frames": 27, "output_access_units": 24, "last_input_age_s": 0.008, "last_output_age_s": 0.005, "error": null, "pipeline_active": true}]}
+{"time": "2026-09-23T11:35:24.014+08:00", "monotonic": 155.254639, "kind": "peer_ice_state", "peer_id": "146570741b", "state": "closed"}
+{"time": "2026-09-23T11:35:24.015+08:00", "monotonic": 155.255246, "kind": "peer_closing", "peer_id": "146570741b", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-23T11:35:24.015+08:00", "monotonic": 155.25544, "kind": "peer_connection_state", "peer_id": "146570741b", "state": "closed"}
+{"time": "2026-09-23T11:35:24.025+08:00", "monotonic": 155.265144, "kind": "encoder_closed", "encoder_id": "e52a9ea4ad", "input_frames": 46, "output_access_units": 43, "error": null}
+{"time": "2026-09-23T11:35:24.886+08:00", "monotonic": 156.126035, "kind": "health_sample", "yolo_frames": 271, "yolo_age_s": 0.03, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-23T11:35:25.441+08:00", "monotonic": 156.681615, "kind": "peer_created", "peer_id": "c032ae0082", "remote": "100.83.253.28"}
+{"time": "2026-09-23T11:35:25.887+08:00", "monotonic": 157.127535, "kind": "health_sample", "yolo_frames": 295, "yolo_age_s": 0.015, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:26.889+08:00", "monotonic": 158.129591, "kind": "health_sample", "yolo_frames": 319, "yolo_age_s": 0.026, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:27.892+08:00", "monotonic": 159.132035, "kind": "health_sample", "yolo_frames": 343, "yolo_age_s": 0.032, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:28.894+08:00", "monotonic": 160.134728, "kind": "health_sample", "yolo_frames": 367, "yolo_age_s": 0.034, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:29.896+08:00", "monotonic": 161.136198, "kind": "health_sample", "yolo_frames": 391, "yolo_age_s": 0.028, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:30.898+08:00", "monotonic": 162.138863, "kind": "health_sample", "yolo_frames": 415, "yolo_age_s": 0.021, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:31.476+08:00", "monotonic": 162.716751, "kind": "offer_answered", "peer_id": "c032ae0082"}
+{"time": "2026-09-23T11:35:31.480+08:00", "monotonic": 162.720333, "kind": "peer_ice_state", "peer_id": "c032ae0082", "state": "checking"}
+{"time": "2026-09-23T11:35:31.480+08:00", "monotonic": 162.720559, "kind": "peer_connection_state", "peer_id": "c032ae0082", "state": "connecting"}
+{"time": "2026-09-23T11:35:31.690+08:00", "monotonic": 162.930091, "kind": "peer_ice_state", "peer_id": "c032ae0082", "state": "completed"}
+{"time": "2026-09-23T11:35:31.900+08:00", "monotonic": 163.140711, "kind": "health_sample", "yolo_frames": 439, "yolo_age_s": 0.03, "peer_count": 1, "peers": [{"id": "c032ae0082", "state": "connecting", "ice": "completed"}], "encoders": []}
+{"time": "2026-09-23T11:35:31.912+08:00", "monotonic": 163.152467, "kind": "peer_connection_state", "peer_id": "c032ae0082", "state": "connected"}
+{"time": "2026-09-23T11:35:31.917+08:00", "monotonic": 163.157792, "kind": "encoder_created", "encoder_id": "21944abe70", "bitrate": 3000000}
+{"time": "2026-09-23T11:35:32.014+08:00", "monotonic": 163.254309, "kind": "peer_ice_state", "peer_id": "c032ae0082", "state": "closed"}
+{"time": "2026-09-23T11:35:32.014+08:00", "monotonic": 163.254501, "kind": "peer_closing", "peer_id": "c032ae0082", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-23T11:35:32.014+08:00", "monotonic": 163.254634, "kind": "peer_connection_state", "peer_id": "c032ae0082", "state": "closed"}
+{"time": "2026-09-23T11:35:32.022+08:00", "monotonic": 163.2627, "kind": "encoder_closed", "encoder_id": "21944abe70", "input_frames": 9, "output_access_units": 6, "error": null}
+{"time": "2026-09-23T11:35:32.905+08:00", "monotonic": 164.14494, "kind": "health_sample", "yolo_frames": 464, "yolo_age_s": 0.0, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-23T11:35:33.331+08:00", "monotonic": 164.571729, "kind": "peer_created", "peer_id": "35bcd1e0a6", "remote": "100.83.253.28"}
+{"time": "2026-09-23T11:35:33.907+08:00", "monotonic": 165.147029, "kind": "health_sample", "yolo_frames": 487, "yolo_age_s": 0.02, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:34.908+08:00", "monotonic": 166.14889, "kind": "health_sample", "yolo_frames": 512, "yolo_age_s": 0.003, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:35.909+08:00", "monotonic": 167.149851, "kind": "health_sample", "yolo_frames": 536, "yolo_age_s": 0.004, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:36.911+08:00", "monotonic": 168.151718, "kind": "health_sample", "yolo_frames": 559, "yolo_age_s": 0.025, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:37.913+08:00", "monotonic": 169.153489, "kind": "health_sample", "yolo_frames": 584, "yolo_age_s": 0.002, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:38.915+08:00", "monotonic": 170.155472, "kind": "health_sample", "yolo_frames": 608, "yolo_age_s": 0.001, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "new", "ice": "new"}], "encoders": []}
+{"time": "2026-09-23T11:35:39.362+08:00", "monotonic": 170.602015, "kind": "offer_answered", "peer_id": "35bcd1e0a6"}
+{"time": "2026-09-23T11:35:39.364+08:00", "monotonic": 170.604778, "kind": "peer_ice_state", "peer_id": "35bcd1e0a6", "state": "checking"}
+{"time": "2026-09-23T11:35:39.365+08:00", "monotonic": 170.605, "kind": "peer_connection_state", "peer_id": "35bcd1e0a6", "state": "connecting"}
+{"time": "2026-09-23T11:35:39.613+08:00", "monotonic": 170.853517, "kind": "peer_ice_state", "peer_id": "35bcd1e0a6", "state": "completed"}
+{"time": "2026-09-23T11:35:39.764+08:00", "monotonic": 171.004368, "kind": "peer_connection_state", "peer_id": "35bcd1e0a6", "state": "connected"}
+{"time": "2026-09-23T11:35:39.769+08:00", "monotonic": 171.009224, "kind": "encoder_created", "encoder_id": "8bdc322c27", "bitrate": 3000000}
+{"time": "2026-09-23T11:35:39.918+08:00", "monotonic": 171.158552, "kind": "health_sample", "yolo_frames": 631, "yolo_age_s": 0.024, "peer_count": 1, "peers": [{"id": "35bcd1e0a6", "state": "connected", "ice": "completed"}], "encoders": [{"id": "8bdc322c27", "input_frames": 18, "output_access_units": 14, "last_input_age_s": 0.0, "last_output_age_s": 0.003, "error": null, "pipeline_active": true}]}
+{"time": "2026-09-23T11:35:40.022+08:00", "monotonic": 171.262833, "kind": "peer_ice_state", "peer_id": "35bcd1e0a6", "state": "closed"}
+{"time": "2026-09-23T11:35:40.023+08:00", "monotonic": 171.263525, "kind": "peer_closing", "peer_id": "35bcd1e0a6", "reason": "ice_closed", "connection_state": "closed", "ice_state": "closed"}
+{"time": "2026-09-23T11:35:40.023+08:00", "monotonic": 171.263845, "kind": "peer_connection_state", "peer_id": "35bcd1e0a6", "state": "closed"}
+{"time": "2026-09-23T11:35:40.031+08:00", "monotonic": 171.27108, "kind": "encoder_closed", "encoder_id": "8bdc322c27", "input_frames": 34, "output_access_units": 31, "error": null}
+{"time": "2026-09-23T11:35:40.921+08:00", "monotonic": 172.161575, "kind": "health_sample", "yolo_frames": 655, "yolo_age_s": 0.034, "peer_count": 0, "peers": [], "encoders": []}
+{"time": "2026-09-23T11:35:41.167+08:00", "monotonic": 172.406955, "kind": "server_stopped"}

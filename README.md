@@ -172,6 +172,40 @@ encoder 後使用 `appsink max-buffers=1 drop=false`，避免丟失 H.264 參考
 
 ### WebRTC minimal + RTSP-over-UDP
 
+新的模組化 RTSP 直傳 + YOLO/GPS 入口是
+[`rtsp_yolo_direct/`](rtsp_yolo_direct/README.md)：
+
+```bash
+python -m rtsp_yolo_direct --rtsp-url rtsp://192.168.144.135/live
+```
+
+此入口延續 resilient 版本的 RTSP／瀏覽器重連、單一觀看連線、健康紀錄、
+五張截圖及 YOLO/GPS，但影片改為 H.264 封包直傳，GPS 和 Canvas metadata
+由另一條路徑處理。
+
+若要測試 RTSP H.264 不經解碼或重編碼直接透過 WebRTC 傳送：
+
+```bash
+python rtsp_direct_stream.py --rtsp-url rtsp://192.168.144.135/live
+```
+
+開啟 `http://<jetson-ip>:8081/`，或查看 `/status` 的 `packetsSent`。
+此測試只轉送 H.264 封包，單次只供一個觀看連線直接讀取來源；瀏覽器必須支援來源的 H.264 profile。
+若協商失敗，可將相機設為 Baseline profile 再試。
+
+要同時測試直傳影片、獨立 Jetson 解碼的 YOLO 與來源時間對齊：
+
+```bash
+python rtsp_yolo_sync.py --rtsp-url rtsp://192.168.144.135/live \
+  --model-path yolo11s.engine
+```
+
+開啟 `http://<jetson-ip>:8082/`。畫面左上角顯示目前播放影格與
+所用 YOLO 結果的來源 PTS、兩者差距；每個框旁也標示 YOLO PTS。
+此入口只接收一次 RTSP，WebRTC 轉送壓縮封包，Jetson 解碼器只供 YOLO 使用。
+瀏覽器需支援 `requestVideoFrameCallback` 的 `rtpTimestamp`，才能直接比較
+兩條路徑的來源時間；`/status` 可查看封包與推論計數。
+
 ```bash
 python rtsp_minimal.py \
   --rtsp-url rtsp://192.168.144.135/live \

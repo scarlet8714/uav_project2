@@ -378,7 +378,6 @@ let peer = null;
 let generation = 0;
 let retryTimer = null;
 let retrySeconds = 1;
-let lastVideoFrameAt = 0;
 let stopped = false;
 
 function scheduleReconnect(reason) {
@@ -398,7 +397,6 @@ async function startWebRTC() {
   if (peer) peer.close();
   const pc = new RTCPeerConnection();
   peer = pc;
-  lastVideoFrameAt = performance.now();
   statusElement.textContent = "WebRTC: connecting";
   pc.addTransceiver("video", { direction: "recvonly" });
   pc.ontrack = event => {
@@ -450,23 +448,6 @@ async function startWebRTC() {
     if (pc === peer) scheduleReconnect(error.message);
   }
 }
-
-if (videoElement.requestVideoFrameCallback) {
-  const sawFrame = () => {
-    lastVideoFrameAt = performance.now();
-    videoElement.requestVideoFrameCallback(sawFrame);
-  };
-  videoElement.requestVideoFrameCallback(sawFrame);
-} else {
-  videoElement.addEventListener("timeupdate", () => { lastVideoFrameAt = performance.now(); });
-}
-
-setInterval(() => {
-  if (!peer || stopped) return;
-  if (peer.connectionState === "connected" && performance.now() - lastVideoFrameAt > 4000) {
-    scheduleReconnect("no decoded video frame");
-  }
-}, 1000);
 
 setInterval(async () => {
   try {

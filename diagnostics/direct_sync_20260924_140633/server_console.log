@@ -1,0 +1,15 @@
+WARNING ⚠️ torchvision==0.18 is incompatible with torch==2.4.
+Run 'pip install torchvision==0.19' to fix torchvision or 'pip install -U torch torchvision' to update both.
+For a full compatibility table see https://github.com/pytorch/vision#installation
+Event log: diagnostics/direct_sync_20260924_140633/direct_20260924_140637
+Open http://<device-ip>:18085/
+======== Running on http://127.0.0.1:18085 ========
+(Press CTRL+C to quit)
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+Loading yolo11s.engine for TensorRT inference...
+[09/24/2026-14:06:39] [TRT] [I] Loaded engine size: 21 MiB
+[09/24/2026-14:06:39] [TRT] [W] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.
+[09/24/2026-14:06:39] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in engine deserialization: CPU +0, GPU +18, now: CPU 0, GPU 18 (MiB)
+[09/24/2026-14:06:39] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +22, now: CPU 0, GPU 40 (MiB)

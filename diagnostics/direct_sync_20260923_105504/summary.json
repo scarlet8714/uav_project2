@@ -1,0 +1,30 @@
+{
+  "targetDurationS": 30.0,
+  "observedDurationS": 30.0,
+  "samples": 31,
+  "connectedSamples": 31,
+  "healthySamples": 31,
+  "unhealthySamples": 0,
+  "notConnectedSamples": 0,
+  "firstUnhealthyElapsedS": null,
+  "lastRtspPacketAdvanceS": 30.002,
+  "lastVideoPtsAdvanceS": 30.002,
+  "matchedPtsSamples": 31,
+  "gapMs": {
+    "median": 33.38,
+    "p95": 66.74,
+    "p99": 66.74,
+    "max": 66.74,
+    "over100": 0,
+    "over250": 0,
+    "over500": 0
+  },
+  "videoPtsBackwards": [],
+  "videoFreezeSamples": [],
+  "rtspReconnectsEnd": 0,
+  "rtspPacketsEnd": 1999,
+  "yoloFramesEnd": 1692,
+  "failure": null,
+  "serverExitCode": 0,
+  "chromeExitCode": 0
+}

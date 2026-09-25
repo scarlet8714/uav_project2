@@ -1,0 +1,263 @@
+WARNING ⚠️ torchvision==0.18 is incompatible with torch==2.4.
+Run 'pip install torchvision==0.19' to fix torchvision or 'pip install -U torch torchvision' to update both.
+For a full compatibility table see https://github.com/pytorch/vision#installation
+Diagnostic log directory: diagnostics/browser_stress_20260923_110705/server_diagnostics/resilient_20260923_110709
+Open http://<device-ip>:8080 in a browser
+[YOLO] Loading model: yolo11s.engine
+======== Running on http://0.0.0.0:8080 ========
+(Press CTRL+C to quit)
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+Loading yolo11s.engine for TensorRT inference...
+2026-09-23 11:07:10,533 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:10 +0800] "GET /api/health HTTP/1.1" 200 467 "-" "Python/3.10 aiohttp/3.14.3"
+[09/23/2026-11:07:10] [TRT] [I] Loaded engine size: 22 MiB
+[09/23/2026-11:07:10] [TRT] [W] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.
+[09/23/2026-11:07:10] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in engine deserialization: CPU +0, GPU +18, now: CPU 0, GPU 18 (MiB)
+[09/23/2026-11:07:10] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +22, now: CPU 0, GPU 40 (MiB)
+2026-09-23 11:07:10,894 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:10 +0800] "GET /api/health HTTP/1.1" 200 551 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:11,557 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:11 +0800] "GET /api/health HTTP/1.1" 200 551 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:11,736 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:11 +0800] "GET /api/health HTTP/1.1" 200 551 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:11,833 INFO aioice.ice Connection(0) Remote candidate "7b6064a2-d671-4aa4-b4fc-5a093101c6ca.local" could not be resolved
+2026-09-23 11:07:12,560 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:12 +0800] "GET /api/health HTTP/1.1" 200 551 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:13,564 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:13 +0800] "GET /api/health HTTP/1.1" 200 552 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:13,713 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:13 +0800] "GET /api/health HTTP/1.1" 200 552 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:16,196 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:16 +0800] "GET /api/health HTTP/1.1" 200 553 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:16,853 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:10 +0800] "POST /offer HTTP/1.1" 200 2361 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:17,763 INFO aioice.ice Connection(0) Discovered peer reflexive candidate Candidate(5ZjaKGeILa 1 udp 1845501695 100.83.253.28 49668 typ prflx)
+2026-09-23 11:07:17,764 INFO aioice.ice Connection(0) Check CandidatePair(('100.70.8.54', 60690) -> ('100.83.253.28', 49668)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:07:18,669 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:18 +0800] "GET /api/health HTTP/1.1" 200 565 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:18,778 INFO aioice.ice Connection(0) Check CandidatePair(('100.70.8.54', 60690) -> ('100.83.253.28', 49668)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:07:18,779 INFO aioice.ice Connection(0) ICE completed
+2026-09-23 11:07:19,311 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:19 +0800] "GET /events/undefined HTTP/1.1" 404 174 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:19,942 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:19 +0800] "GET /api/health HTTP/1.1" 200 567 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:30,425 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:30 +0800] "GET /api/health HTTP/1.1" 200 471 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:32,424 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:32 +0800] "GET /api/health HTTP/1.1" 200 554 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:33,310 INFO aioice.ice Connection(1) Remote candidate "7b6064a2-d671-4aa4-b4fc-5a093101c6ca.local" could not be resolved
+2026-09-23 11:07:34,483 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:34 +0800] "GET /api/health HTTP/1.1" 200 554 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:36,428 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:36 +0800] "GET /api/health HTTP/1.1" 200 554 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:38,326 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:29 +0800] "POST /offer HTTP/1.1" 200 2360 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:38,454 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:38 +0800] "GET /api/health HTTP/1.1" 200 566 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:39,082 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:39 +0800] "GET / HTTP/1.1" 200 14958 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:39,126 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:39 +0800] "GET /api/camera HTTP/1.1" 200 1005 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:39,245 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:39 +0800] "GET /favicon.ico HTTP/1.1" 404 174 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:39,625 INFO aioice.ice Connection(2) Remote candidate "2b34e31b-ec75-48c0-aa0c-b1f0d8368725.local" resolved to 192.168.125.100
+2026-09-23 11:07:40,625 INFO aioice.ice Connection(2) Remote candidate "d6dbab02-65cc-4c8a-ac80-4f6e52e40eba.local" could not be resolved
+2026-09-23 11:07:40,875 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:40 +0800] "GET /api/health HTTP/1.1" 200 553 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:41,118 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:41 +0800] "GET /api/health HTTP/1.1" 200 554 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:41,453 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:41 +0800] "GET /events/undefined HTTP/1.1" 404 174 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:43,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:43 +0800] "GET /api/health HTTP/1.1" 200 553 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:45,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:45 +0800] "GET /api/health HTTP/1.1" 200 553 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:45,637 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:39 +0800] "POST /offer HTTP/1.1" 200 2107 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:45,638 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('192.168.125.100', 47662)) State.FROZEN -> State.WAITING
+2026-09-23 11:07:45,638 INFO aioice.ice Connection(2) Check CandidatePair(('192.168.125.100', 59209) -> ('192.168.125.100', 47662)) State.FROZEN -> State.WAITING
+2026-09-23 11:07:45,639 INFO aioice.ice Connection(2) Check CandidatePair(('192.168.144.130', 45997) -> ('192.168.125.100', 47662)) State.FROZEN -> State.WAITING
+2026-09-23 11:07:45,640 INFO aioice.ice Connection(2) Check CandidatePair(('172.17.0.1', 53236) -> ('192.168.125.100', 47662)) State.FROZEN -> State.WAITING
+2026-09-23 11:07:45,641 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('192.168.125.100', 47662)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:07:45,646 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('192.168.125.100', 47662)) failed : source address mismatch
+2026-09-23 11:07:45,647 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('192.168.125.100', 47662)) State.IN_PROGRESS -> State.FAILED
+2026-09-23 11:07:45,652 INFO aioice.ice Connection(2) Discovered peer reflexive candidate Candidate(LRbDUXvmsf 1 udp 1845501695 100.70.8.54 47662 typ prflx)
+2026-09-23 11:07:45,652 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('100.70.8.54', 47662)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:07:45,657 INFO aioice.ice Connection(2) Check CandidatePair(('100.70.8.54', 48011) -> ('100.70.8.54', 47662)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:07:45,657 INFO aioice.ice Connection(2) Check CandidatePair(('192.168.125.100', 59209) -> ('192.168.125.100', 47662)) State.WAITING -> State.FAILED
+2026-09-23 11:07:45,657 INFO aioice.ice Connection(2) Check CandidatePair(('192.168.144.130', 45997) -> ('192.168.125.100', 47662)) State.WAITING -> State.FAILED
+2026-09-23 11:07:45,657 INFO aioice.ice Connection(2) Check CandidatePair(('172.17.0.1', 53236) -> ('192.168.125.100', 47662)) State.WAITING -> State.FAILED
+2026-09-23 11:07:45,658 INFO aioice.ice Connection(2) ICE completed
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 4 
+===== NvVideo: NVENC =====
+NvMMLiteBlockCreate : Block : BlockType = 4 
+H264: extProfile = 2 Level = 0 
+NVMEDIA: Need to set EMC bandwidth : 376000 
+2026-09-23 11:07:45,829 INFO aioice.ice Connection(2) Discovered peer reflexive candidate Candidate(Plp7bKcmnR 1 udp 1845504255 2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee 44630 typ prflx)
+2026-09-23 11:07:45,829 INFO aioice.ice Connection(2) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 57693) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 44630)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:07:45,834 INFO aioice.ice Connection(2) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 57693) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 44630)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:07:46,309 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:46 +0800] "GET /api/health HTTP/1.1" 200 728 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:47,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:47 +0800] "GET /api/health HTTP/1.1" 200 730 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:47,320 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:47 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:48,334 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:48 +0800] "GET /api/health HTTP/1.1" 200 730 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:49,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:49 +0800] "GET /api/health HTTP/1.1" 200 731 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:49,345 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:49 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:50,360 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:50 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:51,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:51 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:51,373 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:51 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:52,387 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:52 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:53,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:53 +0800] "GET /api/health HTTP/1.1" 200 731 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:53,400 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:53 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:53,740 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:53 +0800] "GET /api/health HTTP/1.1" 200 560 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:53,884 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:53 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:54,141 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:54 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:54,412 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:54 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:54,760 INFO aioice.ice Connection(3) Remote candidate "7b6064a2-d671-4aa4-b4fc-5a093101c6ca.local" could not be resolved
+2026-09-23 11:07:55,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:55 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:55,426 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:55 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:56,290 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:56 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:56,440 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:56 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:57,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:57 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:57,453 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:57 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:58,347 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:58 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:58,466 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:58 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:59,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:59 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:07:59,477 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:07:59 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:07:59,778 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:07:51 +0800] "POST /offer HTTP/1.1" 200 2361 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:07:59,813 INFO aioice.ice Connection(4) Remote candidate "2b34e31b-ec75-48c0-aa0c-b1f0d8368725.local" resolved to 192.168.125.100
+2026-09-23 11:08:00,399 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:00 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:00,492 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:00 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:00,804 INFO aioice.ice Connection(4) Remote candidate "d6dbab02-65cc-4c8a-ac80-4f6e52e40eba.local" could not be resolved
+2026-09-23 11:08:01,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:01 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:01,505 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:01 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:01,560 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:01 +0800] "GET /events/undefined HTTP/1.1" 404 174 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:02,519 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:02 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:03,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:03 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:03,533 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:03 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:04,546 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:04 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:05,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:05 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:05,559 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:05 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:05,748 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:05 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:05,817 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:07:59 +0800] "POST /offer HTTP/1.1" 200 2360 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:05,818 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('192.168.125.100', 44224)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:05,819 INFO aioice.ice Connection(4) Check CandidatePair(('192.168.125.100', 40573) -> ('192.168.125.100', 44224)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:05,820 INFO aioice.ice Connection(4) Check CandidatePair(('192.168.144.130', 44499) -> ('192.168.125.100', 44224)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:05,820 INFO aioice.ice Connection(4) Check CandidatePair(('172.17.0.1', 37717) -> ('192.168.125.100', 44224)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:05,821 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('192.168.125.100', 44224)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:05,825 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('192.168.125.100', 44224)) failed : source address mismatch
+2026-09-23 11:08:05,826 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('192.168.125.100', 44224)) State.IN_PROGRESS -> State.FAILED
+2026-09-23 11:08:05,828 INFO aioice.ice Connection(4) Discovered peer reflexive candidate Candidate(Kd64bv4mNL 1 udp 1845501695 100.70.8.54 44224 typ prflx)
+2026-09-23 11:08:05,829 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('100.70.8.54', 44224)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:05,831 INFO aioice.ice Connection(4) Check CandidatePair(('100.70.8.54', 47357) -> ('100.70.8.54', 44224)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:08:05,831 INFO aioice.ice Connection(4) Check CandidatePair(('192.168.125.100', 40573) -> ('192.168.125.100', 44224)) State.WAITING -> State.FAILED
+2026-09-23 11:08:05,832 INFO aioice.ice Connection(4) Check CandidatePair(('192.168.144.130', 44499) -> ('192.168.125.100', 44224)) State.WAITING -> State.FAILED
+2026-09-23 11:08:05,832 INFO aioice.ice Connection(4) Check CandidatePair(('172.17.0.1', 37717) -> ('192.168.125.100', 44224)) State.WAITING -> State.FAILED
+2026-09-23 11:08:05,832 INFO aioice.ice Connection(4) ICE completed
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 4 
+===== NvVideo: NVENC =====
+NvMMLiteBlockCreate : Block : BlockType = 4 
+H264: extProfile = 2 Level = 0 
+NVMEDIA: Need to set EMC bandwidth : 376000 
+2026-09-23 11:08:06,017 INFO aioice.ice Connection(4) Discovered peer reflexive candidate Candidate(EY7wxARCN3 1 udp 1845504255 2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee 37714 typ prflx)
+2026-09-23 11:08:06,017 INFO aioice.ice Connection(4) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 36692) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 37714)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:06,019 INFO aioice.ice Connection(4) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 36692) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 37714)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:08:06,575 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:06 +0800] "GET /api/health HTTP/1.1" 200 730 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:07,118 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:07 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:07,589 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:07 +0800] "GET /api/health HTTP/1.1" 200 730 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:08,602 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:08 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:09,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:09 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:09,616 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:09 +0800] "GET /api/health HTTP/1.1" 200 730 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:10,630 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:10 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:11,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:11 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:11,147 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:11 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:11,645 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:11 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:11,778 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:11 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:11,857 INFO aioice.ice Connection(5) Remote candidate "7b6064a2-d671-4aa4-b4fc-5a093101c6ca.local" could not be resolved
+2026-09-23 11:08:12,658 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:12 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:13,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:13 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:13,671 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:13 +0800] "GET /api/health HTTP/1.1" 200 555 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:13,877 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:13 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:14,688 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:14 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:15,125 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:15 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:15,701 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:15 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:16,439 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:16 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:16,715 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:16 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:16,872 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:09 +0800] "POST /offer HTTP/1.1" 200 2361 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:16,901 INFO aioice.ice Connection(6) Remote candidate "2b34e31b-ec75-48c0-aa0c-b1f0d8368725.local" resolved to 192.168.125.100
+2026-09-23 11:08:17,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:17 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:17,729 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:17 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:17,747 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:17 +0800] "GET /events/undefined HTTP/1.1" 404 174 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:17,898 INFO aioice.ice Connection(6) Remote candidate "d6dbab02-65cc-4c8a-ac80-4f6e52e40eba.local" could not be resolved
+2026-09-23 11:08:18,354 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:18 +0800] "GET /api/health HTTP/1.1" 200 555 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:18,743 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:18 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:19,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:19 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:19,757 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:19 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:20,772 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:20 +0800] "GET /api/health HTTP/1.1" 200 554 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:21,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:21 +0800] "GET /api/health HTTP/1.1" 200 556 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:21,786 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:21 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:22,801 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:22 +0800] "GET /api/health HTTP/1.1" 200 556 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:22,919 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:16 +0800] "POST /offer HTTP/1.1" 200 2361 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:22,921 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('192.168.125.100', 37124)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:22,922 INFO aioice.ice Connection(6) Check CandidatePair(('192.168.125.100', 38627) -> ('192.168.125.100', 37124)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:22,922 INFO aioice.ice Connection(6) Check CandidatePair(('192.168.144.130', 48742) -> ('192.168.125.100', 37124)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:22,923 INFO aioice.ice Connection(6) Check CandidatePair(('172.17.0.1', 39370) -> ('192.168.125.100', 37124)) State.FROZEN -> State.WAITING
+2026-09-23 11:08:22,923 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('192.168.125.100', 37124)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:22,928 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('192.168.125.100', 37124)) failed : source address mismatch
+2026-09-23 11:08:22,928 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('192.168.125.100', 37124)) State.IN_PROGRESS -> State.FAILED
+2026-09-23 11:08:22,930 INFO aioice.ice Connection(6) Discovered peer reflexive candidate Candidate(e0dwWJKc6F 1 udp 1845501695 100.70.8.54 37124 typ prflx)
+2026-09-23 11:08:22,931 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('100.70.8.54', 37124)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:22,933 INFO aioice.ice Connection(6) Check CandidatePair(('100.70.8.54', 48184) -> ('100.70.8.54', 37124)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:08:22,933 INFO aioice.ice Connection(6) Check CandidatePair(('192.168.125.100', 38627) -> ('192.168.125.100', 37124)) State.WAITING -> State.FAILED
+2026-09-23 11:08:22,933 INFO aioice.ice Connection(6) Check CandidatePair(('192.168.144.130', 48742) -> ('192.168.125.100', 37124)) State.WAITING -> State.FAILED
+2026-09-23 11:08:22,933 INFO aioice.ice Connection(6) Check CandidatePair(('172.17.0.1', 39370) -> ('192.168.125.100', 37124)) State.WAITING -> State.FAILED
+2026-09-23 11:08:22,934 INFO aioice.ice Connection(6) ICE completed
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 4 
+===== NvVideo: NVENC =====
+NvMMLiteBlockCreate : Block : BlockType = 4 
+H264: extProfile = 2 Level = 0 
+NVMEDIA: Need to set EMC bandwidth : 376000 
+2026-09-23 11:08:23,115 INFO aioice.ice Connection(6) Discovered peer reflexive candidate Candidate(60HrXdXjv6 1 udp 1845504255 2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee 59934 typ prflx)
+2026-09-23 11:08:23,116 INFO aioice.ice Connection(6) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 47156) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 59934)) State.WAITING -> State.IN_PROGRESS
+2026-09-23 11:08:23,120 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:23 +0800] "GET /api/health HTTP/1.1" 200 730 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:23,123 INFO aioice.ice Connection(6) Check CandidatePair(('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 47156) -> ('2001:b400:e7d6:21b2:ac47:44ac:86ad:ceee', 59934)) State.IN_PROGRESS -> State.SUCCEEDED
+2026-09-23 11:08:23,820 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:23 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:24,839 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:24 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:25,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:25 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:25,855 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:25 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:26,871 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:26 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:27,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:27 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:27,886 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:27 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:28,038 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:28 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:28,899 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:28 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:29,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:29 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:29,914 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:29 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:30,928 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:30 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:30,984 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:30 +0800] "GET /api/health HTTP/1.1" 200 731 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:31,115 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:31 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:31,945 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:31 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:32,437 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:32 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:32,960 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:32 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:33,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:33 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:33,977 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:33 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:34,979 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:34 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:34,992 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:34 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:35,113 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:35 +0800] "GET /api/health HTTP/1.1" 200 730 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:36,006 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:36 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:36,423 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:36 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:37,017 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:37 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:37,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:37 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:38,032 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:38 +0800] "GET /api/health HTTP/1.1" 200 732 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:38,486 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:38 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:39,065 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:39 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:39,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:39 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:40,078 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:40 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:41,021 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:41 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:41,093 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:41 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:41,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:41 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:42,108 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:42 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:42,470 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:42 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+2026-09-23 11:08:43,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:43 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:43,122 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:43 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:44,137 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:44 +0800] "GET /api/health HTTP/1.1" 200 731 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:45,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:45 +0800] "GET /api/health HTTP/1.1" 200 732 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:45,152 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:45 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:46,166 INFO aiohttp.access 127.0.0.1 [23/Sep/2026:11:08:46 +0800] "GET /api/health HTTP/1.1" 200 733 "-" "Python/3.10 aiohttp/3.14.3"
+2026-09-23 11:08:47,114 INFO aiohttp.access 100.70.8.54 [23/Sep/2026:11:08:47 +0800] "GET /api/health HTTP/1.1" 200 733 "http://100.70.8.54:8080/" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36"
+2026-09-23 11:08:48,320 ERROR aiohttp.server Error handling request from 100.83.253.28
+Traceback (most recent call last):
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/web_protocol.py", line 575, in _handle_request
+    resp = await request_handler(request)
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/web_app.py", line 559, in _handle
+    return await handler(request)
+  File "/home/jetson/Desktop/uav_project2/yolo_final_rtsp_resilient.py", line 212, in offer
+    params = await request.json()
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/web_request.py", line 720, in json
+    body = await self.text()
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/web_request.py", line 714, in text
+    bytes_body = await self.read()
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/web_request.py", line 701, in read
+    chunk = await self._payload.readany()
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/streams.py", line 460, in readany
+    await self._wait("readany")
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiohttp/streams.py", line 365, in _wait
+    await waiter
+ConnectionResetError: Connection lost
+2026-09-23 11:08:48,328 INFO aiohttp.access 100.83.253.28 [23/Sep/2026:11:08:27 +0800] "POST /offer HTTP/1.1" 500 0 "http://100.70.8.54:8080/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"

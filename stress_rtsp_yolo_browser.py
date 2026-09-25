@@ -124,7 +124,10 @@ async def main():
     parser.add_argument("--port", type=int, default=8080)
     parser.add_argument("--debug-port", type=int, default=9223)
     parser.add_argument("--rtsp-url", default="rtsp://192.168.144.135/live")
+    parser.add_argument("--browser-host", default="127.0.0.1",
+                        help="address Chromium uses to open the video page")
     args = parser.parse_args()
+    browser_url = f"http://{args.browser_host}:{args.port}/"
 
     run_dir = Path("diagnostics") / datetime.now().strftime("browser_stress_%Y%m%d_%H%M%S")
     run_dir.mkdir(parents=True)
@@ -171,7 +174,7 @@ async def main():
                 "--autoplay-policy=no-user-gesture-required",
                 f"--remote-debugging-port={args.debug_port}",
                 f"--user-data-dir={profile_dir}",
-                f"http://127.0.0.1:{args.port}/",
+                browser_url,
                 stdout=chrome_file, stderr=asyncio.subprocess.STDOUT,
                 env={**os.environ, "XDG_RUNTIME_DIR": str(runtime_dir)},
             )
@@ -187,7 +190,7 @@ async def main():
 
             target = await devtools_target(session, args.debug_port)
             await cdp_call(session, target["webSocketDebuggerUrl"], "Page.navigate",
-                           {"url": f"http://127.0.0.1:{args.port}/"})
+                           {"url": browser_url})
             for _ in range(60):
                 snapshot = await browser_snapshot(session, args.debug_port)
                 if (snapshot.get("peerState") == "connected"

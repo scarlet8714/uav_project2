@@ -1,0 +1,65 @@
+WARNING ⚠️ torchvision==0.18 is incompatible with torch==2.4.
+Run 'pip install torchvision==0.19' to fix torchvision or 'pip install -U torch torchvision' to update both.
+For a full compatibility table see https://github.com/pytorch/vision#installation
+Event log: diagnostics/direct_sync_20260923_093817/direct_20260923_093821
+Open http://<device-ip>:18085/
+======== Running on http://127.0.0.1:18085 ========
+(Press CTRL+C to quit)
+Opening in BLOCKING MODE 
+NvMMLiteOpen : Block : BlockType = 261 
+NvMMLiteBlockCreate : Block : BlockType = 261 
+Loading yolo11s.engine for TensorRT inference...
+[09/23/2026-09:38:22] [TRT] [I] Loaded engine size: 22 MiB
+[09/23/2026-09:38:22] [TRT] [W] Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.
+[09/23/2026-09:38:22] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in engine deserialization: CPU +0, GPU +18, now: CPU 0, GPU 18 (MiB)
+[09/23/2026-09:38:22] [TRT] [I] [MemUsageChange] TensorRT-managed allocation in IExecutionContext creation: CPU +0, GPU +22, now: CPU 0, GPU 40 (MiB)
+Exception in callback Transaction.__retry()
+handle: <TimerHandle when=9286.32415232 Transaction.__retry()>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1062, in sendto
+    self._sock.sendto(data, addr)
+AttributeError: 'NoneType' object has no attribute 'sendto'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/jetson/.local/lib/python3.10/site-packages/aioice/stun.py", line 333, in __retry
+    self.__protocol.send_stun(self.__request, self.__addr)
+  File "/home/jetson/.local/lib/python3.10/site-packages/aioice/ice.py", line 327, in send_stun
+    self.transport.sendto(bytes(message), addr)
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1072, in sendto
+    self._fatal_error(
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 719, in _fatal_error
+    self._loop.call_exception_handler({
+AttributeError: 'NoneType' object has no attribute 'call_exception_handler'
+Exception in callback Transaction.__retry()
+handle: <TimerHandle when=9286.324312016 Transaction.__retry()>
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1062, in sendto
+    self._sock.sendto(data, addr)
+AttributeError: 'NoneType' object has no attribute 'sendto'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/asyncio/events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "/home/jetson/.local/lib/python3.10/site-packages/aioice/stun.py", line 333, in __retry
+    self.__protocol.send_stun(self.__request, self.__addr)
+  File "/home/jetson/.local/lib/python3.10/site-packages/aioice/ice.py", line 327, in send_stun
+    self.transport.sendto(bytes(message), addr)
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 1072, in sendto
+    self._fatal_error(
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 719, in _fatal_error
+    self._loop.call_exception_handler({
+AttributeError: 'NoneType' object has no attribute 'call_exception_handler'
+Task exception was never retrieved
+future: <Task finished name='Task-26392' coro=<RTCPeerConnection.__connect() done, defined at /home/jetson/.local/lib/python3.10/site-packages/aiortc/rtcpeerconnection.py:1072> exception=InvalidStateError('RTCIceTransport is closed')>
+Traceback (most recent call last):
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiortc/rtcpeerconnection.py", line 1080, in __connect
+    await iceTransport.start(self.__remoteIce[transceiver])
+  File "/home/jetson/.local/lib/python3.10/site-packages/aiortc/rtcicetransport.py", line 329, in start
+    raise InvalidStateError("RTCIceTransport is closed")
+aiortc.exceptions.InvalidStateError: RTCIceTransport is closed
