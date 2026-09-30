@@ -5,7 +5,7 @@
 ```bash
 python -m rtsp_yolo_direct \
   --rtsp-url rtsp://192.168.144.135/live \
-  --model-path yolo11s.engine
+  --model-path 11s_car_960.engine
 ```
 
 開啟 `http://<jetson-ip>:8080/`。測試時可用 `--port` 改變連接埠；

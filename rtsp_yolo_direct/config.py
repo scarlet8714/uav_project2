@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--rtsp-timeout", type=float, default=5.0)
     parser.add_argument("--playout-delay-ms", type=float, default=150.0,
                         help="WebRTC packet pacing buffer; 0 disables it")
-    parser.add_argument("--model-path", default="yolo11s.engine")
+    parser.add_argument("--model-path", default="11s_car_960.engine")
     parser.add_argument("--gps-port", default="/dev/ttyUSB0")
     parser.add_argument("--gps-baudrate", type=int, default=9600)
     parser.add_argument("--no-gps", action="store_true")
