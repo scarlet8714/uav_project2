@@ -53,7 +53,7 @@ YOLO_IMGSZ = (544, 960)
 YOLO_CONF = 0.4
 YOLO_IOU = 0.45
 
-GPS_PORT = "/dev/ttyUSB0"
+GPS_PORT = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
 GPS_BAUDRATE = 9600
 ALTITUDE_AGL_M = 75.0
 HFOV_DEG = 52.0

@@ -1,6 +1,42 @@
 # Current Status
 
-更新日期：2026-09-17
+更新日期：2026-10-01
+
+## 目前使用的 RTSP／GPS 路徑
+
+目前 RTSP 直傳、YOLO 與 GPS 入口為 `python -m rtsp_yolo_direct`，
+預設模型是 `11s_car_960.engine`，RTSP 來源為
+`rtsp://192.168.144.135/live`，HTTP port 為 8080。影片以 H.264 壓縮
+封包直傳 WebRTC；另一條路徑經 Jetson 解碼供 YOLO 每兩幀推論一次，
+瀏覽器以來源時間戳配對 Canvas 偵測框。送出緩衝預設 150 ms。
+更完整的測試與待辦見 [直傳版本現況](rtsp_yolo_direct/CURRENT_STATUS.md)。
+
+2026-10-01 使用者實際試播確認：RTSP 接收 buffer 調為 600 ms
+（`source.py` 的 `max_delay=600000`）後，延遲已大幅改善。
+目前尚未量測改善幅度，長時間停流問題仍需耐久測試確認。
+
+GPS 為 SparkFun SAM-M8Q；`rtsp_yolo_direct` 依使用者指定預設為
+`/dev/ttyUSB4`。穩定路徑為
+`/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`；2026-10-01 主機
+枚舉為 `/dev/ttyUSB4`，當時 `/dev/ttyUSB0` 是 FTDI 裝置。
+GPSReader 每次開啟串口時設定 5 Hz（200 ms），9600 baud 僅保留
+RMC／VTG；未執行設定保存指令或斷電保存驗證。
+
+五分鐘實機監測為 300.1 秒、RMC／VTG 各 1499 筆，RMC 平均
+5.000 Hz，中位間隔 200.0 ms、最大 201.5 ms，NMEA 解析／校驗
+錯誤 0 筆。所有 RMC 均為無效定位，因此只確認輸出頻率與串口
+穩定性，尚未驗證有效定位、目標座標或與影格的時間配對。
+見 [GPS 實測紀錄](diagnostics/GPS_5HZ_20261001.md)。
+
+飛控姿態資料另列備案：地面站 → Tailscale → Jetson，Jetson 分流給
+定位程式，並經 Tailscale 轉送原始遙測給筆電 QGC、傳送 WebRTC
+與辨識結果給筆電瀏覽器，保留本地 GPS。使用者已確認地面站經
+Tailscale 到筆電可用；到 Jetson 的收包與再次轉送尚未實作／驗證。
+飛控目前無法直接連 Jetson；先測收包、轉送段延遲與整段延遲變化，單向資料
+缺少共同時間基準時不能準確量出整段絕對延遲。詳見
+[遙測轉送備案](rtsp_yolo_direct/CURRENT_STATUS.md#備案經-tailscale-轉送飛控遙測)。
+
+以下工業相機與 9/17 耐久測試保留為歷史基準；不代表今天重新完成驗證。
 
 ## 目前基準
 
@@ -255,9 +291,9 @@ Final 的 `--jpeg-decoder jpegdec|nvjpegdec` 目前僅保留 CLI 相容性。
   640×480 @ 30 FPS
 - 兩個既有 final 曾以 `yolo11s.pt`、1280×720 完成三來源測試
 
-目前 final 的實測沒有 `/dev/ttyUSB0`，因此 GPS 驗證範圍是 reader
-無資料容錯及 `GPS unavailable` 標註；尚未驗證有效 NMEA、目標座標與
-GPS 更新延遲。
+早期 final 測試只驗證 GPS 無資料容錯。2026-10-01 已另外完成
+五分鐘 checksum 有效 NMEA 的 5 Hz 實機監測；尚未取得有效 fix，
+也尚未完成 final 目標座標與影格／GPS 配對的端到端驗證。
 
 ### Jetson VIC
 
@@ -388,7 +424,9 @@ HTTP 202／429 冷卻行為亦通過。
 尚未以有效 GPS 資料對 final 系列做完整目標定位與實體相機截圖整合
 測試。
 
-## 目前 Git working tree 重點
+## 2026-09-17 Git working tree 歷史紀錄
+
+以下清單是當時的紀錄；目前未提交內容請以 `git status --short` 為準。
 
 主要已修改：
 
@@ -484,7 +522,7 @@ NVENC 不是 GR3D CUDA workload，1 Hz GR3D sampling 也會受 YOLO burst 相位
 - 工業相機 YUYV 1920×1080 @ 30 FPS 原始資料率約 995 Mb/s，USB、
   記憶體 copy 與色彩轉換成本高。
 - 目前測試只有 4 個 CPU cores online；nvpmodel 變更會影響效能數據。
-- Final 尚未用有效 `/dev/ttyUSB0` GPS 做 NMEA 與目標座標端到端驗證。
+- GPS 已完成 5 Hz NMEA 接收測試；Final 尚未以有效 fix 完成目標座標端到端驗證。
 - tcambin 重建與高解析度首幀可能較慢。
 - 相機控制值讀回一致不代表畫面效果已量測驗證。
 
@@ -499,6 +537,6 @@ NVENC 不是 GR3D CUDA workload，1 Hz GR3D sampling 也會受 YOLO burst 相位
    與 STUN/TURN。
 6. 鎖定 exposure、gain、white balance 與場景，軟體／VIC 交錯各跑
    5 次，並做 30～60 分鐘 soak test。
-7. 接上 `/dev/ttyUSB0` GPS 後測 NMEA、目標座標、GPS 更新延遲與五張
-   final 截圖完整流程。
+7. 在可見天空處取得有效 GPS fix，再驗證影格／GPS 時間配對、
+   目標座標、GPS 更新延遲與五張 final 截圖完整流程。
 8. 測試 1、2、4 viewer；目前每個 WebRTC peer 仍有獨立 encoder。

@@ -2,6 +2,8 @@
 
 Run: python rtsp_direct_stream.py --rtsp-url rtsp://192.168.144.135/live
 Open http://<server-ip>:8081/ in a browser. The camera must supply H.264.
+Use the page's recording controls to download MP4 to the viewer's computer
+(requires a browser with MP4 MediaRecorder support).
 """
 
 import argparse
@@ -21,15 +23,106 @@ HTML = """<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RTSP H.264 direct WebRTC test</title>
 <style>body{background:#111;color:#eee;font-family:sans-serif;text-align:center}
-video{width:min(100%,1280px);background:#000}</style></head>
+video{width:min(100%,1280px);background:#000}
+button{padding:10px 16px;margin:4px;cursor:pointer}
+button:disabled{cursor:default}a{color:#8cf}</style></head>
 <body><h2>RTSP H.264 direct WebRTC test</h2>
 <p id="status">Connecting…</p><video id="video" autoplay playsinline muted controls></video>
+<div><button id="record-start" disabled>開始錄影</button>
+<button id="record-stop" disabled>停止並下載</button>
+<a id="record-download" hidden>下載上次錄影</a></div>
+<p id="record-status">等待影像連線…</p>
+<p>MP4 錄影儲存在本機瀏覽器記憶體，停止後下載到您的電腦。請先停止錄影再關閉頁面。</p>
 <script>
 const status = document.getElementById('status');
+const video = document.getElementById('video');
+const recordStart = document.getElementById('record-start');
+const recordStop = document.getElementById('record-stop');
+const recordStatus = document.getElementById('record-status');
+const recordDownload = document.getElementById('record-download');
+const recordingMime = typeof MediaRecorder === 'undefined' ? '' :
+  ['video/mp4;codecs=avc1.42E01E', 'video/mp4']
+    .find(type => MediaRecorder.isTypeSupported(type));
+let recorder = null;
+let downloadUrl = null;
+let recordTimer = null;
+let recordingStarted = 0;
+function canRecord() {
+  return Boolean(recordingMime && pc.connectionState === 'connected' &&
+    video.srcObject && video.srcObject.getVideoTracks().some(t => t.readyState === 'live'));
+}
+function updateRecordButtons() {
+  recordStart.disabled = Boolean(recorder) || !canRecord();
+  recordStop.disabled = !recorder || recorder.state !== 'recording';
+}
+function stopRecording() {
+  if (recorder && recorder.state !== 'inactive') {
+    recorder.stop();
+    clearInterval(recordTimer);
+    recordStatus.textContent = '正在準備錄影下載…';
+    updateRecordButtons();
+  }
+}
+recordStart.onclick = () => {
+  if (recorder || !canRecord()) return;
+  try {
+    const chunks = [];
+    const activeRecorder = new MediaRecorder(video.srcObject, {mimeType: recordingMime});
+    let recordingError = '';
+    activeRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    activeRecorder.onerror = e => {
+      recordingError = e.error ? e.error.message : '未知錯誤';
+      stopRecording();
+    };
+    activeRecorder.onstop = () => {
+      clearInterval(recordTimer);
+      recorder = null;
+      updateRecordButtons();
+      if (!chunks.length) {
+        recordStatus.textContent = '錄影未產生資料' + (recordingError ? '：' + recordingError : '');
+        return;
+      }
+      const blob = new Blob(chunks, {type: activeRecorder.mimeType});
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      downloadUrl = URL.createObjectURL(blob);
+      recordDownload.href = downloadUrl;
+      recordDownload.download = 'rtsp-' + new Date(recordingStarted).toISOString()
+        .replace(/[:.]/g, '-') + '.mp4';
+      recordDownload.hidden = false;
+      recordDownload.click();
+      recordStatus.textContent = '錄影已完成（' + (blob.size / 1048576).toFixed(1) +
+        ' MB），若未自動下載，請點「下載上次錄影」。' +
+        (recordingError ? ' 錄影中斷：' + recordingError : '');
+    };
+    activeRecorder.start(1000);
+    recorder = activeRecorder;
+    recordingStarted = Date.now();
+    const showDuration = () => {
+      recordStatus.textContent = '錄影中：' + Math.floor((Date.now() - recordingStarted) / 1000) + ' 秒';
+    };
+    showDuration();
+    recordTimer = setInterval(showDuration, 1000);
+    updateRecordButtons();
+  } catch (e) {
+    recordStatus.textContent = '無法開始錄影：' + e.message;
+    updateRecordButtons();
+  }
+};
+recordStop.onclick = stopRecording;
+if (!recordingMime) recordStatus.textContent = '此瀏覽器不支援 MP4 錄影，請使用支援 MP4 MediaRecorder 的新版瀏覽器。';
 const pc = new RTCPeerConnection();
 pc.addTransceiver('video', {direction: 'recvonly'});
-pc.ontrack = e => { document.getElementById('video').srcObject = e.streams[0]; };
-pc.onconnectionstatechange = () => { status.textContent = 'WebRTC: ' + pc.connectionState; };
+pc.ontrack = e => {
+  video.srcObject = e.streams[0] || new MediaStream([e.track]);
+  e.track.addEventListener('ended', () => { stopRecording(); updateRecordButtons(); });
+  updateRecordButtons();
+};
+pc.onconnectionstatechange = () => {
+  status.textContent = 'WebRTC: ' + pc.connectionState;
+  if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) stopRecording();
+  updateRecordButtons();
+  if (canRecord() && !recorder) recordStatus.textContent = '可以開始錄影';
+};
 async function start() {
   await pc.setLocalDescription(await pc.createOffer());
   if (pc.iceGatheringState !== 'complete') await new Promise(resolve => {
@@ -46,7 +139,13 @@ async function start() {
   await pc.setRemoteDescription(await response.json());
 }
 start().catch(e => { console.error(e); status.textContent = 'Error: ' + e.message; });
-window.addEventListener('beforeunload', () => pc.close());
+window.addEventListener('beforeunload', e => {
+  if (recorder) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+window.addEventListener('pagehide', () => { stopRecording(); pc.close(); });
 </script></body></html>"""
 
 
@@ -147,6 +246,7 @@ async def status(request):
     return web.json_response({"sourceCodec": "H.264",
                               "sourceProfileLevelId": request.app["profile_id"],
                               "decode": False,
+                              "receiveBufferMs": 600,
                               "videoPeers": peers})
 
 
@@ -159,7 +259,8 @@ async def shutdown(app):
 
 def build_app(url, transport, timeout):
     player = MediaPlayer(url, format="rtsp",
-                         options={"rtsp_transport": transport},
+                         options={"rtsp_transport": transport,
+                                  "max_delay": "600000"},
                          timeout=timeout, decode=False)
     if player.video is None:
         raise RuntimeError("RTSP source has no supported H.264 video track")
@@ -194,6 +295,7 @@ def main():
         parser.error("--timeout must be greater than zero")
     app = build_app(args.rtsp_url, args.transport, args.timeout)
     print("RTSP H.264 -> WebRTC H.264 packet relay (decode=False, no encoder)")
+    print("RTSP receive/reorder buffer: 600 ms")
     print(f"Source H.264 profile-level-id: {app['profile_id']}")
     print(f"Open http://<server-ip>:{args.port}/ ; inspect /status for packetsSent")
     web.run_app(app, host=args.host, port=args.port)

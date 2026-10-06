@@ -28,8 +28,48 @@ const ctx = canvas.getContext('2d');
 const status = document.getElementById('status');
 const transportStatus = document.getElementById('transport');
 let peer = null, socket = null, origin = null, generation = null;
-let detections = [], videoPts = null, lastFrameAt = 0, videoFps = null;
+let detections = [], videoPts = null;
 let retrySeconds = 1, retryTimer = null, connectionSerial = 0, stopped = false;
+const FIRST_FRAME_TIMEOUT_MS = 10000, VIDEO_STALL_TIMEOUT_MS = 5000;
+let videoConnectedAt = null, lastVideoProgressAt = null, lastDecodedFrames = null;
+const classColors = new Map([
+  ['car', '#00e676'],
+  ['light_tactical', '#00d5ff'],
+  ['medium_tactical', '#ffeb3b'],
+  ['cm34', '#6ca7ff'],
+  ['amphibious_armored_vehicle', '#b388ff'],
+]);
+
+function colorForClass(label) {
+  if (!classColors.has(label)) {
+    // Additional classes stay in the yellow/green/cyan/blue/violet hue range.
+    const hue = 70 + ((classColors.size - 5) * 137.508) % 190;
+    classColors.set(label, `hsl(${hue.toFixed(3)}, 90%, 70%)`);
+  }
+  return classColors.get(label);
+}
+
+function resetVideoWatchdog() {
+  videoConnectedAt = null; lastVideoProgressAt = null; lastDecodedFrames = null;
+}
+
+function noteVideoProgress(now) {
+  lastVideoProgressAt = now;
+  retrySeconds = 1;
+}
+
+function checkVideoTimeout(pc) {
+  // Background tabs may stop presenting frames; resume with a fresh grace period.
+  if (stopped || document.hidden || pc !== peer || pc.connectionState !== 'connected') return false;
+  const now = performance.now();
+  if (videoConnectedAt === null) videoConnectedAt = now;
+  const waiting = lastVideoProgressAt === null;
+  const age = now - (lastVideoProgressAt ?? videoConnectedAt);
+  const limit = waiting ? FIRST_FRAME_TIMEOUT_MS : VIDEO_STALL_TIMEOUT_MS;
+  if (age < limit) return false;
+  reconnect(`${waiting ? 'first video frame timeout' : 'video stalled'} (${(age/1000).toFixed(1)} s)`);
+  return true;
+}
 
 function reconnect(reason) {
   if (stopped || retryTimer) return;
@@ -37,7 +77,7 @@ function reconnect(reason) {
   socket?.close(); socket = null;
   peer?.close(); peer = null;
   origin = null; generation = null; detections = []; videoPts = null;
-  videoFps = null; lastFrameAt = 0;
+  resetVideoWatchdog();
   transportStatus.textContent = 'RTP waiting';
   const delay = retrySeconds * 1000;
   retrySeconds = Math.min(retrySeconds * 2, 8);
@@ -46,11 +86,7 @@ function reconnect(reason) {
 
 function draw(now, frame) {
   const frameAt = performance.now();
-  if (lastFrameAt && frameAt > lastFrameAt) {
-    const fps = 1000 / (frameAt-lastFrameAt);
-    videoFps = videoFps === null ? fps : videoFps*0.8+fps*0.2;
-  }
-  lastFrameAt = frameAt;
+  if (peer?.connectionState === 'connected') noteVideoProgress(frameAt);
   if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   }
@@ -64,32 +100,34 @@ function draw(now, frame) {
   const selected = match && videoPts - match.ptsSeconds < 1 ? match : null;
   if (selected) {
     const sx = canvas.width / selected.width, sy = canvas.height / selected.height;
+    const displayWidth = canvas.clientWidth || canvas.width;
+    const fontSize = Math.max(24, displayWidth/40) * canvas.width/displayWidth;
+    const padding = fontSize/4, lineHeight = fontSize*1.2;
     ctx.lineWidth = Math.max(2, canvas.width/600);
-    ctx.font = `${Math.max(14, canvas.width/67)}px sans-serif`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textBaseline = 'top';
     for (const box of selected.boxes) {
-      ctx.strokeStyle = box.confirmed ? '#00ff66' : '#ffdc4a';
-      ctx.fillStyle = ctx.strokeStyle;
+      const color = colorForClass(box.label);
+      ctx.strokeStyle = color;
       ctx.strokeRect(box.x1*sx, box.y1*sy,
         (box.x2-box.x1)*sx, (box.y2-box.y1)*sy);
-      let label = `${box.label} ${box.confidence.toFixed(2)} @ ${selected.ptsSeconds.toFixed(3)}s`;
-      if (!box.confirmed) label += ` confirm ${box.confirm_count}/3`;
-      if (box.target_lat !== undefined)
-        label += `  ${box.target_lat.toFixed(7)}, ${box.target_lon.toFixed(7)}`;
-      ctx.fillText(label, box.x1*sx+3, Math.max(18, box.y1*sy-5));
+      const coordinates = Number.isFinite(box.target_lat) && Number.isFinite(box.target_lon)
+        ? `${box.target_lat.toFixed(7)}, ${box.target_lon.toFixed(7)}` : '--, --';
+      const textWidth = Math.max(ctx.measureText(box.label).width,
+                                 ctx.measureText(coordinates).width);
+      const labelWidth = Math.min(canvas.width, textWidth + padding*2);
+      const labelHeight = lineHeight*2 + padding*2;
+      const x = Math.max(0, Math.min(box.x1*sx, canvas.width-labelWidth));
+      const above = box.y1*sy-labelHeight;
+      const y = Math.max(0, Math.min(above >= 0 ? above : box.y1*sy,
+                                    canvas.height-labelHeight));
+      ctx.fillStyle = 'rgba(0,0,0,.65)';
+      ctx.fillRect(x, y, labelWidth, labelHeight);
+      ctx.fillStyle = color;
+      ctx.fillText(box.label, x+padding, y+padding, labelWidth-padding*2);
+      ctx.fillText(coordinates, x+padding, y+padding+lineHeight, labelWidth-padding*2);
     }
   }
-  ctx.fillStyle = 'rgba(0,0,0,.72)';
-  ctx.fillRect(0, 0, Math.min(canvas.width, 830), 82);
-  ctx.fillStyle = '#fff'; ctx.font = '18px monospace';
-  const v = videoPts === null ? '--' : videoPts.toFixed(3)+' s';
-  const y = selected ? selected.ptsSeconds.toFixed(3)+' s' : '--';
-  const gap = selected ? ((videoPts-selected.ptsSeconds)*1000).toFixed(0)+' ms' : '--';
-  const gps = selected ? `${selected.gpsStatus} / age ${selected.gpsAgeMs ?? '--'} ms` : '--';
-  ctx.fillText(`Video PTS ${v}   YOLO PTS ${y}   gap ${gap}`, 10, 26);
-  const fpsText = `video ${videoFps?.toFixed(1) ?? '--'} fps / YOLO ${selected?.yoloFps?.toFixed(1) ?? '--'} fps`;
-  ctx.fillText(`GPS ${gps}   ${fpsText}`, 10, 53);
-  status.textContent = `WebRTC ${peer?.connectionState ?? 'disconnected'}`+
-    ` | RTSP source time ${v} | YOLO ${y} | gap ${gap} | GPS ${gps}`;
   video.requestVideoFrameCallback(draw);
 }
 if (video.requestVideoFrameCallback) video.requestVideoFrameCallback(draw);
@@ -98,12 +136,15 @@ else status.textContent = 'This browser requires requestVideoFrameCallback.';
 async function connect() {
   const serial = ++connectionSerial;
   const pc = new RTCPeerConnection(); peer = pc;
+  resetVideoWatchdog();
   pc.addTransceiver('video', {direction:'recvonly'});
   pc.ontrack = event => { video.srcObject = event.streams[0]; video.play().catch(()=>{}); };
   pc.onconnectionstatechange = () => {
     if (pc !== peer) return;
+    status.textContent = `WebRTC ${pc.connectionState}`;
     transportStatus.textContent = `WebRTC ${pc.connectionState} | RTP waiting`;
-    if (pc.connectionState === 'connected') retrySeconds = 1;
+    if (pc.connectionState === 'connected' && videoConnectedAt === null)
+      videoConnectedAt = performance.now();
     if (['failed','closed'].includes(pc.connectionState)) reconnect(pc.connectionState);
   };
   try {
@@ -146,11 +187,19 @@ async function connect() {
 setInterval(async () => {
   const pc = peer;
   if (!pc || pc.connectionState !== 'connected') return;
+  // Run before getStats so a slow stats request cannot disable the timeout.
+  if (checkVideoTimeout(pc)) return;
   try {
     const stats = await pc.getStats();
     if (pc !== peer) return;
     const inbound = [...stats.values()].find(item =>
       item.type === 'inbound-rtp' && item.kind === 'video');
+    if (!video.requestVideoFrameCallback && !document.hidden &&
+        Number.isFinite(inbound?.framesDecoded)) {
+      const decoded = inbound.framesDecoded;
+      if (decoded > (lastDecodedFrames ?? 0)) noteVideoProgress(performance.now());
+      lastDecodedFrames = decoded;
+    }
     transportStatus.textContent = inbound ?
       `WebRTC ${pc.connectionState} | RTP ${inbound.packetsReceived ?? 0} packets / `+
       `${inbound.framesDecoded ?? 0} decoded frames / `+
@@ -158,6 +207,11 @@ setInterval(async () => {
       `WebRTC ${pc.connectionState} | RTP 0 packets / 0 decoded frames`;
   } catch (_) {}
 }, 1000);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  resetVideoWatchdog();
+  if (peer?.connectionState === 'connected') videoConnectedAt = performance.now();
+});
 setInterval(async () => {
   try {
     const response = await fetch('/api/health', {cache:'no-store'});

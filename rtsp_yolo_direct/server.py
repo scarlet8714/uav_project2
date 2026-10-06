@@ -1,6 +1,7 @@
 """HTTP/WebRTC signaling, peer watchdog, health, and structured event log."""
 
 import asyncio
+from collections import deque
 from datetime import datetime
 import json
 from pathlib import Path
@@ -11,8 +12,10 @@ import uuid
 from aiohttp import web
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.exceptions import OperationError
+from aiortc.rtp import RtpPacket, is_rtcp
 
 from .codec import preferences
+from .diagnostics import format_event, format_status
 from .inference import InferenceWorker
 from .source import RtspSource
 from .web import HTML
@@ -34,6 +37,8 @@ class EventLog:
                 "kind": kind, **fields}
         with self.lock:
             self.handle.write(json.dumps(line, ensure_ascii=False) + "\n")
+            if kind != "health_sample":
+                print(f"[{line['time'][11:23]}] {format_event(kind, fields)}", flush=True)
 
     def close(self):
         with self.lock:
@@ -50,15 +55,56 @@ def publish(app, message):
         queue.put_nowait(message)
 
 
+def peer_snapshot(peer_id, peer, now):
+    track = peer.get("track")
+    queue = peer.get("queue")
+    return {"id": peer_id, "connection_state": peer["pc"].connectionState,
+            "ice_state": peer["pc"].iceConnectionState,
+            "age_s": round(now-peer["created_at"], 3),
+            "sent_packets": peer["sent_packets"], "sent_bytes": peer["sent_bytes"],
+            "sent_rtcp_packets": peer.get("sent_rtcp_packets", 0),
+            "last_rtp_age_s": None if peer["last_rtp_at"] is None else
+                round(now-peer["last_rtp_at"], 3),
+            "last_send_error": peer.get("last_send_error"),
+            "metadata_connected": queue is not None,
+            "metadata_queue_size": None if queue is None else queue.qsize(),
+            "track": None if track is None else {
+                "ready_state": track.readyState,
+                "queue_size": track.queue.qsize(), "queue_capacity": track.queue.maxsize,
+                "waiting_keyframe": track.wait_keyframe, "last_pts90k": track.last_pts}}
+
+
+def health_snapshot(app, now=None):
+    now = time.monotonic() if now is None else now
+    rtsp, yolo = app["source"].status(), app["inference"].status()
+    config = app["config"]
+    return {"healthy": rtsp["connected"] and yolo["last_frame_age_s"] is not None
+                       and yolo["last_frame_age_s"] < 3,
+            "rtsp": rtsp, "yolo": yolo,
+            "peers": [peer_snapshot(peer_id, peer, now)
+                      for peer_id, peer in tuple(app["peers"].items())],
+            "recent_peer_closures": list(app["recent_peer_closures"]),
+            "settings": {"model_path": config.model_path, "tracker": config.tracker,
+                         "transport": config.transport, "receive_max_delay_ms": 600,
+                         "playout_delay_ms": config.playout_delay_ms,
+                         "rtsp_timeout_s": config.rtsp_timeout, "infer_every_n_frames": 2},
+            "video_path": "H.264 packets -> WebRTC (no decode or re-encode)"}
+
+
 async def close_peer(app, peer_id, reason):
     peer = app["peers"].get(peer_id)
     if peer is None or peer.get("closing"):
         return
     peer["closing"] = True
+    snapshot = peer_snapshot(peer_id, peer, time.monotonic())
+    closure = {"time": datetime.now().astimezone().isoformat(timespec="milliseconds"),
+               "reason": reason, **snapshot}
+    app["recent_peer_closures"].append(closure)
     app["log"].write("peer_closing", peer_id=peer_id, reason=reason,
                      connection_state=peer["pc"].connectionState,
                      sent_packets=peer["sent_packets"],
-                     sent_bytes=peer["sent_bytes"])
+                     sent_bytes=peer["sent_bytes"], last_rtp_age_s=snapshot["last_rtp_age_s"],
+                     snapshot=snapshot)
     try:
         await asyncio.wait_for(peer["pc"].close(), timeout=5)
     except Exception as exc:
@@ -93,7 +139,8 @@ async def offer(request):
                 "generation": source.generation, "queue": None,
                 "created_at": time.monotonic(), "connected_at": None,
                 "disconnected_at": None, "closing": False,
-                "sent_packets": 0, "sent_bytes": 0, "last_rtp_at": None}
+                "sent_packets": 0, "sent_bytes": 0, "last_rtp_at": None,
+                "sent_rtcp_packets": 0, "last_send_error": None}
         app["peers"][peer_id] = peer
         app["log"].write("peer_created", peer_id=peer_id,
                          remote=request.remote)
@@ -134,9 +181,9 @@ async def offer(request):
             send_rtp = transport._send_rtp
 
             async def capture_origin(data):
-                if peer["origin"] is None and track.last_pts is not None:
+                rtcp = is_rtcp(data)
+                if not rtcp and peer["origin"] is None and track.last_pts is not None:
                     try:
-                        from aiortc.rtp import RtpPacket
                         packet = RtpPacket.parse(data)
                         origin = (packet.timestamp - track.last_pts) & 0xFFFFFFFF
                         peer["origin"] = origin
@@ -147,10 +194,19 @@ async def offer(request):
                             queue.put_nowait({"type": "origin", "rtpOrigin": origin})
                     except Exception:
                         pass
-                result = await send_rtp(data)
-                peer["sent_packets"] += 1
-                peer["sent_bytes"] += len(data)
-                peer["last_rtp_at"] = time.monotonic()
+                try:
+                    result = await send_rtp(data)
+                except Exception as exc:
+                    peer["last_send_error"] = repr(exc)
+                    app["log"].write("rtp_send_error", peer_id=peer_id,
+                                     error=peer["last_send_error"])
+                    raise
+                if rtcp:
+                    peer["sent_rtcp_packets"] += 1
+                else:
+                    peer["sent_packets"] += 1
+                    peer["sent_bytes"] += len(data)
+                    peer["last_rtp_at"] = time.monotonic()
                 return result
 
             transport._send_rtp = capture_origin
@@ -199,23 +255,7 @@ async def events(request):
 
 
 async def health(request):
-    app = request.app
-    now = time.monotonic()
-    rtsp = app["source"].status()
-    yolo = app["inference"].status()
-    return web.json_response({
-        "healthy": rtsp["connected"] and yolo["last_frame_age_s"] is not None
-                   and yolo["last_frame_age_s"] < 3,
-        "rtsp": rtsp, "yolo": yolo,
-        "peers": [{"id": peer_id, "connection_state": peer["pc"].connectionState,
-                   "ice_state": peer["pc"].iceConnectionState,
-                   "age_s": round(now-peer["created_at"], 3),
-                   "sent_packets": peer["sent_packets"],
-                   "sent_bytes": peer["sent_bytes"],
-                   "last_rtp_age_s": None if peer["last_rtp_at"] is None else
-                       round(now-peer["last_rtp_at"], 3)}
-                  for peer_id, peer in tuple(app["peers"].items())],
-        "video_path": "H.264 packets -> WebRTC (no decode or re-encode)"})
+    return web.json_response(health_snapshot(request.app))
 
 
 async def camera_status(request):
@@ -237,18 +277,23 @@ async def capture(request):
 
 async def watchdog(app):
     input_stalled = False
+    last_console_status = None
     while True:
         await asyncio.sleep(1)
         now = time.monotonic()
-        rtsp = app["source"].status()
-        yolo = app["inference"].status()
+        snapshot = health_snapshot(app, now)
+        rtsp, yolo = snapshot["rtsp"], snapshot["yolo"]
         stalled = not rtsp["connected"] or yolo["last_frame_age_s"] is None or yolo["last_frame_age_s"] >= 3
         if stalled != input_stalled:
             input_stalled = stalled
             app["log"].write("input_stall" if stalled else "input_recovered",
                              rtsp=rtsp, yolo=yolo)
         app["log"].write("health_sample", rtsp=rtsp, yolo=yolo,
-                         peer_count=len(app["peers"]))
+                         peer_count=len(snapshot["peers"]), peers=snapshot["peers"])
+        if last_console_status is None or now-last_console_status >= 5:
+            last_console_status = now
+            stamp = datetime.now().astimezone().strftime("%H:%M:%S")
+            print(f"[{stamp}] STATUS {format_status(snapshot)}", flush=True)
         for peer_id, peer in tuple(app["peers"].items()):
             pc = peer["pc"]
             reason = None
@@ -272,7 +317,8 @@ async def startup(app):
     app["source"] = RtspSource(
         app["config"], loop, app["inference"].submit, app["log"].write)
     app["watchdog"] = asyncio.create_task(watchdog(app))
-    app["log"].write("server_started")
+    app["log"].write("server_started", **health_snapshot(app)["settings"],
+                     log_directory=str(app["log"].directory))
 
 
 async def shutdown(app):
@@ -293,6 +339,7 @@ def create_app(config):
     app = web.Application()
     app["config"] = config
     app["log"] = EventLog(config.log_dir)
+    app["recent_peer_closures"] = deque(maxlen=16)
     app.router.add_get("/", index)
     app.router.add_post("/offer", offer)
     app.router.add_get("/events/{peer_id}", events)

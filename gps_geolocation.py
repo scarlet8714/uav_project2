@@ -14,10 +14,31 @@ import pynmea2
 # 你最常需要手動修改的固定參數
 # ============================================================
 
-GPS_PORT = "/dev/ttyUSB0"     # GPS 裝置位置
+GPS_PORT = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
 GPS_BAUDRATE = 9600           # SAM-M8Q 常見 NMEA baudrate；若你的裝置不同可改
 GPS_TIMEOUT_SEC = 1.0         # serial readline timeout
 GPS_STALE_SEC = 3.0           # 超過幾秒沒更新就視為資料過期
+GPS_UPDATE_HZ = 5            # 設定接收器導航更新率
+
+
+def _ubx_command(message_class: int, message_id: int, payload: bytes) -> bytes:
+    body = bytes((message_class, message_id)) + len(payload).to_bytes(2, "little") + payload
+    ck_a = ck_b = 0
+    for byte in body:
+        ck_a = (ck_a + byte) & 0xFF
+        ck_b = (ck_b + ck_a) & 0xFF
+    return b"\xb5\x62" + body + bytes((ck_a, ck_b))
+
+
+def _configure_5hz(ser) -> None:
+    # At 9600 baud, keep only the navigation sentences the reader uses.
+    for sentence_id in range(6):  # GGA, GLL, GSA, GSV, RMC, VTG
+        rate = 1 if sentence_id in (4, 5) else 0
+        ser.write(_ubx_command(0x06, 0x01, bytes((0xF0, sentence_id, rate))))
+    # CFG-RATE: 200 ms measurement interval, one measurement per navigation
+    # solution, UTC time reference. Configuration is volatile on purpose.
+    ser.write(_ubx_command(0x06, 0x08, (200).to_bytes(2, "little") + b"\x01\x00\x00\x00"))
+    ser.flush()
 
 # 相機固定參數：之後測到真實值再修改
 DEFAULT_HFOV_DEG = 70.0       # 水平 FOV，必須自行確認或量測
@@ -160,6 +181,7 @@ class GPSReader:
             baudrate=self.baudrate,
             timeout=self.timeout_sec,
         ) as ser:
+            _configure_5hz(ser)
             self._update_state(
                 connected=True,
                 error=None,

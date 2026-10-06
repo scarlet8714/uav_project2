@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import threading
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Optional
 
@@ -14,10 +15,31 @@ import pynmea2
 # 你最常需要手動修改的固定參數
 # ============================================================
 
-GPS_PORT = "/dev/ttyUSB0"     # GPS 裝置位置
+GPS_PORT = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
 GPS_BAUDRATE = 9600           # SAM-M8Q 常見 NMEA baudrate；若你的裝置不同可改
 GPS_TIMEOUT_SEC = 1.0         # serial readline timeout
 GPS_STALE_SEC = 3.0           # 超過幾秒沒更新就視為資料過期
+GPS_UPDATE_HZ = 5            # 設定接收器導航更新率
+
+
+def _ubx_command(message_class: int, message_id: int, payload: bytes) -> bytes:
+    body = bytes((message_class, message_id)) + len(payload).to_bytes(2, "little") + payload
+    ck_a = ck_b = 0
+    for byte in body:
+        ck_a = (ck_a + byte) & 0xFF
+        ck_b = (ck_b + ck_a) & 0xFF
+    return b"\xb5\x62" + body + bytes((ck_a, ck_b))
+
+
+def _configure_5hz(ser) -> None:
+    # At 9600 baud, keep only the navigation sentences the reader uses.
+    for sentence_id in range(6):  # GGA, GLL, GSA, GSV, RMC, VTG
+        rate = 1 if sentence_id in (4, 5) else 0
+        ser.write(_ubx_command(0x06, 0x01, bytes((0xF0, sentence_id, rate))))
+    # CFG-RATE: 200 ms measurement interval, one measurement per navigation
+    # solution, UTC time reference. Configuration is volatile on purpose.
+    ser.write(_ubx_command(0x06, 0x08, (200).to_bytes(2, "little") + b"\x01\x00\x00\x00"))
+    ser.flush()
 
 # 相機固定參數：之後測到真實值再修改
 DEFAULT_HFOV_DEG = 70.0       # 水平 FOV，必須自行確認或量測
@@ -28,9 +50,9 @@ DEFAULT_VFOV_DEG = 43.0       # 垂直 FOV，必須自行確認或量測
 # 90 = 畫面上方相對飛行方向順時針偏 90 度
 DEFAULT_CAMERA_YAW_OFFSET_DEG = 0.0
 
-# 低速時 COG 可能不穩定。
-# 若速度低於此值，會保留上一個有效 course。
-MIN_SPEED_FOR_COG_MPS = 1.0
+# 暫時停用速度門檻；需要恢復時可設回 1.0 m/s。
+MIN_SPEED_FOR_COG_MPS = None
+GPS_HISTORY_SIZE = 1024      # 有界狀態歷史（位置、方向、無效 fix、斷線）
 
 
 @dataclass
@@ -45,6 +67,8 @@ class GPSState:
 
     last_position_update: Optional[float] = None
     last_course_update: Optional[float] = None
+    last_nmea_update: Optional[float] = None
+    rmc_status: Optional[str] = None
 
     error: Optional[str] = None
 
@@ -69,7 +93,7 @@ class GPSReader:
         baudrate: int = GPS_BAUDRATE,
         timeout_sec: float = GPS_TIMEOUT_SEC,
         stale_sec: float = GPS_STALE_SEC,
-        min_speed_for_cog_mps: float = MIN_SPEED_FOR_COG_MPS,
+        min_speed_for_cog_mps: Optional[float] = MIN_SPEED_FOR_COG_MPS,
     ) -> None:
         self.port = port
         self.baudrate = baudrate
@@ -78,11 +102,12 @@ class GPSReader:
         self.min_speed_for_cog_mps = min_speed_for_cog_mps
 
         self._state = GPSState()
+        self._history = deque(maxlen=GPS_HISTORY_SIZE)
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
 
-        # 保留最後一次可信 course，低速或暫時缺資料時使用
+        # 暫時缺方向資料時保留最後一次收到的 course。
         self._last_valid_course: Optional[float] = None
 
     def start(self) -> None:
@@ -122,14 +147,39 @@ class GPSReader:
             state.fix_valid = False
 
             if state.error is None:
-                state.error = "GPS position is missing or stale."
+                state.error = (
+                    "No recent parsed NMEA data."
+                    if state.last_nmea_update is None or now - state.last_nmea_update > self.stale_sec
+                    else "GPS position is missing or stale."
+                )
 
         return state
+
+    def get_at_or_before(self, receive_mono: float) -> Optional[GPSState]:
+        """取影格接收時間之前最近的狀態副本；無歷史時回傳 None。
+
+        保留無效 fix／斷線事件，避免跨過失效事件沿用舊的有效位置。
+        位置年齡由呼叫端以影格時間判斷，不以目前推論時間判斷。
+        """
+        with self._lock:
+            for received_at, state in reversed(self._history):
+                if received_at <= receive_mono:
+                    return GPSState(**state.__dict__)
+        return None
 
     def _update_state(self, **kwargs) -> None:
         with self._lock:
             for key, value in kwargs.items():
                 setattr(self._state, key, value)
+            # NMEA 活動時間本身不是新的導航狀態。
+            if kwargs.keys() != {"last_nmea_update"}:
+                self._history.append((time.monotonic(), GPSState(**self._state.__dict__)))
+
+    def _accept_course(self, course, speed_mps) -> bool:
+        return (course is not None and math.isfinite(float(course))
+                and (self.min_speed_for_cog_mps is None
+                     or (speed_mps is not None
+                         and speed_mps >= self.min_speed_for_cog_mps)))
 
     def _read_loop(self) -> None:
         while not self._stop_event.is_set():
@@ -160,6 +210,7 @@ class GPSReader:
             baudrate=self.baudrate,
             timeout=self.timeout_sec,
         ) as ser:
+            _configure_5hz(ser)
             self._update_state(
                 connected=True,
                 error=None,
@@ -182,6 +233,7 @@ class GPSReader:
                     # 單筆資料壞掉直接跳過，不影響後續
                     continue
 
+                self._update_state(last_nmea_update=time.monotonic())
                 self._handle_nmea(msg)
 
     def _handle_nmea(self, msg) -> None:
@@ -194,6 +246,7 @@ class GPSReader:
         if isinstance(msg, pynmea2.types.talker.RMC):
             if msg.status != "A":
                 self._update_state(
+                    rmc_status=msg.status,
                     fix_valid=False,
                     error="RMC received but fix is invalid.",
                 )
@@ -211,14 +264,12 @@ class GPSReader:
 
             course = msg.true_course
 
-            if (
-                course is not None
-                and speed_mps is not None
-                and speed_mps >= self.min_speed_for_cog_mps
-            ):
+            course_updated = self._accept_course(course, speed_mps)
+            if course_updated:
                 self._last_valid_course = float(course)
 
             self._update_state(
+                rmc_status=msg.status,
                 latitude=latitude,
                 longitude=longitude,
                 speed_mps=speed_mps,
@@ -227,7 +278,7 @@ class GPSReader:
                 connected=True,
                 last_position_update=now,
                 last_course_update=(
-                    now if self._last_valid_course is not None else None
+                    now if course_updated else self._state.last_course_update
                 ),
                 error=None,
             )
@@ -246,11 +297,7 @@ class GPSReader:
 
             course = msg.true_track
 
-            if (
-                course is not None
-                and speed_mps is not None
-                and speed_mps >= self.min_speed_for_cog_mps
-            ):
+            if self._accept_course(course, speed_mps):
                 self._last_valid_course = float(course)
 
                 self._update_state(

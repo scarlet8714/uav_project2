@@ -104,6 +104,10 @@ class RtspSource:
         self.packets = 0
         self.reconnects = 0
         self.last_packet_at = None
+        self.decoded_frames = 0
+        self.last_decoded_at = None
+        self.decoder_thread = None
+        self.decoder_error = None
         self.error = None
         self._container = None
         self._pipeline = None
@@ -134,6 +138,14 @@ class RtspSource:
         return time.monotonic_ns()
 
     def _decoder_loop(self, sink, generation, stop):
+        try:
+            self._decode_frames(sink, generation, stop)
+        except Exception as exc:
+            self.decoder_error = repr(exc)
+            self.on_event("decoder_error", generation=generation, error=self.decoder_error)
+            raise
+
+    def _decode_frames(self, sink, generation, stop):
         Gst = self.Gst
         while not stop.is_set():
             sample = sink.emit("try-pull-sample", Gst.SECOND)
@@ -155,6 +167,8 @@ class RtspSource:
             finally:
                 buffer.unmap(info)
             pts = int(buffer.pts * 90000 // Gst.SECOND)
+            self.decoded_frames += 1
+            self.last_decoded_at = time.monotonic()
             self.on_frame(DecodedFrame(bgr, pts, self._arrival_for_pts(pts),
                                        generation))
 
@@ -180,7 +194,8 @@ class RtspSource:
     def _run_once(self):
         Gst = self.Gst
         container = av.open(self.config.rtsp_url, format="rtsp",
-                            options={"rtsp_transport": self.config.transport},
+                            options={"rtsp_transport": self.config.transport,
+                                     "max_delay": "600000"},
                             timeout=self.config.rtsp_timeout)
         self._container = container
         stream = container.streams.video[0]
@@ -223,6 +238,8 @@ class RtspSource:
         decoder_thread = threading.Thread(
             target=self._decoder_loop, args=(sink, generation, decoder_stop),
             name="jetson-h264-decoder", daemon=True)
+        self.decoder_thread = decoder_thread
+        self.decoder_error = None
         decoder_thread.start()
         self.ready = True
         self.error = None
@@ -276,6 +293,12 @@ class RtspSource:
         return {"connected": self.ready and age is not None and age < self.config.rtsp_timeout,
                 "transport": self.config.transport, "profile_id": self.profile_id,
                 "generation": self.generation, "packets": self.packets,
+                "thread_alive": self.thread.is_alive(),
+                "decoded_frames": self.decoded_frames,
+                "last_decoded_age_s": None if self.last_decoded_at is None else
+                    round(time.monotonic()-self.last_decoded_at, 3),
+                "decoder_thread_alive": self.decoder_thread is not None and self.decoder_thread.is_alive(),
+                "decoder_error": self.decoder_error,
                 "last_packet_age_s": None if age is None else round(age, 3),
                 "reconnects": self.reconnects, "error": self.error}
 
