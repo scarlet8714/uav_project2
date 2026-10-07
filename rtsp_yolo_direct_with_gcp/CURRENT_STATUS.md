@@ -4,6 +4,81 @@
 `rtsp_yolo_direct`，加入 GCP TURN。**下面保留的舊同步／耐久測試屬於原版，
 不是 GCP TURN 版本的長時間實測結果。**
 
+## 目前進度：準備設定 GCP WireGuard＋反向代理
+
+截至本次更新，**GCP TURN 已接入程式；WireGuard、Nginx 與公網 HTTPS／WSS
+仍在設定準備階段，尚未部署或驗證。**網頁與框／GPS 目前仍走 Tailscale。
+
+已完成的程式調整：
+
+- GCP 版以 TURN relay 傳送影片，保留 RTSP H.264 封包直傳、YOLO／GPS 與 PTS 對齊。
+- metadata WebSocket 已獨立重連；首張畫面／播放停格逾時的強制重連已移除。
+- 送出緩衝預設提高至 **300 ms**；使用者回報觀看起來可以，尚未新增量化比較。
+- 截圖按鈕、API 與背景存圖功能已移除，頁面版本為 **`20261007.3`**。
+  最近一次前端 26 項與 Python TURN／metadata 15 項測試全部通過。
+
+### 已決定的下一階段架構
+
+使用者選擇先走 **WireGuard＋GCP 反向代理**，沿用目前的框／GPS WebSocket；
+WebRTC DataChannel 僅完成優缺點討論，尚未實作。
+
+```text
+網頁／signaling／健康檢查／框／GPS：
+瀏覽器 ↔ GCP Nginx（HTTPS／WSS）↔ WireGuard ↔ Jetson:8081
+
+影片：
+瀏覽器 ↔ 現有 GCP TURN ↔ Jetson
+```
+
+目標是讓觀看端直接開 GCP 的 HTTPS 網址，無需安裝 Tailscale 或 WireGuard。
+WireGuard 只建立 Jetson ↔ GCP 的隧道，由 Nginx 代理目前網頁服務；
+影片繼續使用現有 TURN，不因加入網頁代理而改走 WireGuard。
+需保留原有 PTS 配對、metadata 獨立重連與 300 ms 緩衝行為。
+
+中繼位置固定為指定的 GCP 主機，不自動改走 Tailscale DERP；實際延遲、
+丟包與頻寬仍需實測。WireGuard 使用 UDP，沒有內建 DERP 備援。
+參考：[WireGuard 架構](https://www.wireguard.com/)、
+[Nginx WebSocket 代理](https://nginx.org/en/docs/http/websocket.html)。
+
+### GCP 已知資訊與尚待確認事項
+
+- 預計沿用現有 TURN 主機，公網 IP **`104.155.197.179`**。
+- 使用者尚不確定 GCP VM 的作業系統，且目前**沒有網域**。
+- 已確認可使用 Let's Encrypt 公網 IP 憑證，規劃入口為
+  `https://104.155.197.179/`；尚未申請憑證或啟用 HTTPS。
+  IP 憑證有效期約六天，需設定自動續期與 Nginx 載入新憑證，涵蓋預計一週的使用期間。
+  Certbot 的 webroot IP 憑證流程需 **5.4 以上版本**。
+  參考：[Let's Encrypt IP 憑證與 Certbot 說明](https://letsencrypt.org/2026/03/11/shorter-certs-certbot)。
+- 尚未收到 VM 作業系統、監聽連接埠、主機防火牆或 WireGuard 安裝狀態的輸出。
+  也尚未確認 `104.155.197.179` 是否為靜態 IP，或 `80`／`443` 是否被既有服務占用。
+- 已提供保留現有公網 IP、增加 VM 網路標記 `uav-web-relay`、新增 VPC 防火牆規則的步驟；
+  **尚未收到使用者完成這些設定的確認**。
+  規劃放行 `51820/UDP`（WireGuard）、`80/TCP`（憑證驗證）、
+  `443/TCP`（HTTPS／WSS），目標限定帶此標記的 VM；原 TURN 與 SSH 規則保留。
+  參考：[GCP 靜態 IP](https://docs.cloud.google.com/compute/docs/ip-addresses/configure-static-external-ip-address)、
+  [VPC 防火牆規則](https://docs.cloud.google.com/firewall/docs/using-firewalls)。
+
+### 下次繼續的位置
+
+先由使用者在 GCP Console → Compute Engine → VM 執行個體，
+開啟 `104.155.197.179` 所屬主機的 SSH，執行並提供：
+
+```bash
+cat /etc/os-release
+sudo ss -lntup
+```
+
+取得輸出後，依實際作業系統與連接埠占用情況完成以下工作：
+
+1. 安裝／設定 GCP 與 Jetson 兩端的 WireGuard，交換公鑰；私鑰各自保留於主機。
+2. 確認隧道 handshake，並從 GCP 存取 `http://<Jetson 隧道 IP>:8081/api/health`。
+3. 設定 Nginx 代理網頁、`/offer`、`/api/health` 與 `/events/<peerId>`，支援 WebSocket 升級。
+4. 申請 IP HTTPS 憑證，設定自動續期及 Nginx reload。
+5. 用實際觀看端確認 GCP 網址、框／GPS、PTS 對齊、TURN relay 路徑與斷線恢復。
+
+本次僅記錄進度；未安裝或修改任何主機的 WireGuard／Nginx，未更改 GCP VM、
+防火牆、路由、憑證或 Tailscale 設定，也未重新啟動現行串流。
+
 ## 目前可用的設定
 
 - TURN 公網 IP：`104.155.197.179`，帳號：`uav`。
@@ -130,9 +205,10 @@ python -m rtsp_yolo_direct_with_gcp.check_turn --both --webrtc
 
 ## 尚待驗證事項
 
-目前 IP、帳號、密碼已足夠完成接入，port／傳輸方式也已實測，不需要提供
-GCP 專案 ID、VM zone 或 SSH 金鑰才能使用此版。
-帳密目前不會到期，沒有尚缺的必要連線資訊。
+就現有 TURN 接入而言，IP、帳號、密碼已足夠，port／傳輸方式也已實測，不需要提供
+GCP 專案 ID、VM zone 或 SSH 金鑰才能使用目前的 TURN 版本。
+帳密目前不會到期，TURN 接入沒有尚缺的必要連線資訊。
+新增 WireGuard／反向代理所需的確認事項與下一步，見上方「目前進度」章節。
 
 - 待用實際觀看端網路／瀏覽器測真實相機、YOLO／GPS 對齊與斷線恢復。
   合成影格短測不代表相機碼率下的一週穩定性，也未逐一確認整個 relay UDP port 範圍。
