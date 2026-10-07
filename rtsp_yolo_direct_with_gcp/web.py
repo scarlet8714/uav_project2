@@ -1,8 +1,10 @@
 """Browser UI: direct video, time-matched Canvas boxes, and reconnect."""
 
+UI_REVISION = "20261007.3"
+
 HTML = """<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RTSP YOLO GPS direct WebRTC</title>
+<title>RTSP YOLO GPS GCP TURN</title>
 <style>
 body{margin:0;background:#17191b;color:#eee;font-family:sans-serif}
 main{width:min(96%,1280px);margin:18px auto}
@@ -11,15 +13,15 @@ h1{font-size:1.35rem}
 video{display:block;width:100%;background:#000}
 canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #status{white-space:pre-wrap;font-family:monospace;line-height:1.5}
-button{padding:8px 12px;cursor:pointer}
-#message{margin-left:12px}
+#metadata{font-family:monospace}
 </style></head><body><main>
-<h1>RTSP 直傳 + YOLO / GPS</h1>
+<h1>RTSP + YOLO / GPS · GCP TURN</h1>
+<p id="version">GCP · 資料獨立重連 · __UI_REVISION__</p>
 <div id="stage"><video id="video" autoplay playsinline muted></video>
 <canvas id="overlay"></canvas></div>
 <pre id="status">Connecting…</pre>
 <pre id="transport">RTP waiting</pre>
-<button id="capture">立即儲存 5 張</button><span id="message"></span>
+<p id="metadata">框／GPS 等待連線</p>
 <p>RTSP 來源不提供本機曝光、增益及對焦控制。<a href="/api/health">健康狀態</a></p>
 </main><script>
 const video = document.getElementById('video');
@@ -27,10 +29,15 @@ const canvas = document.getElementById('overlay');
 const ctx = canvas.getContext('2d');
 const status = document.getElementById('status');
 const transportStatus = document.getElementById('transport');
+const metadataStatus = document.getElementById('metadata');
+const iceConfiguration = __TURN_ICE_CONFIGURATION__;
+const frontendRevision = '__UI_REVISION__';
 let peer = null, socket = null, origin = null, generation = null;
 let detections = [], videoPts = null;
 let retrySeconds = 1, retryTimer = null, connectionSerial = 0, stopped = false;
+let peerId = null, metadataRetrySeconds = 1, metadataRetryTimer = null, metadataOpenTimer = null;
 let lastDecodedFrames = null;
+let lastReconnectReason = 'initial';
 const classColors = new Map([
   ['car', '#00e676'],
   ['light_tactical', '#00d5ff'],
@@ -51,14 +58,78 @@ function colorForClass(label) {
 function reconnect(reason) {
   if (stopped || retryTimer) return;
   status.textContent = `Reconnecting: ${reason}`;
-  socket?.close(); socket = null;
-  peer?.close(); peer = null;
+  lastReconnectReason = reason;
+  const oldPeer = peer; peer = null; peerId = null;
+  stopMetadata(); oldPeer?.close();
+  metadataRetrySeconds = 1;
+  metadataStatus.textContent = '框／GPS 等待影像連線';
   origin = null; generation = null; detections = []; videoPts = null;
   lastDecodedFrames = null;
   transportStatus.textContent = 'RTP waiting';
   const delay = retrySeconds * 1000;
   retrySeconds = Math.min(retrySeconds * 2, 8);
   retryTimer = setTimeout(() => { retryTimer = null; connect(); }, delay);
+}
+
+function stopMetadata() {
+  if (metadataRetryTimer !== null) clearTimeout(metadataRetryTimer);
+  if (metadataOpenTimer !== null) clearTimeout(metadataOpenTimer);
+  metadataRetryTimer = null; metadataOpenTimer = null;
+  const oldSocket = socket; socket = null;
+  oldSocket?.close();
+}
+
+function metadataPeerIsCurrent(pc, id, serial) {
+  return !stopped && pc === peer && id === peerId && serial === connectionSerial;
+}
+
+function retryMetadata(pc, id, serial) {
+  if (!metadataPeerIsCurrent(pc, id, serial) || metadataRetryTimer !== null) return;
+  stopMetadata();
+  const delay = metadataRetrySeconds * 1000;
+  metadataRetrySeconds = Math.min(metadataRetrySeconds * 2, 8);
+  metadataStatus.textContent = `框／GPS 中斷，${delay/1000} 秒後重試（保留影像連線）`;
+  metadataRetryTimer = setTimeout(() => {
+    metadataRetryTimer = null;
+    connectMetadata(pc, id, serial);
+  }, delay);
+}
+
+function connectMetadata(pc, id, serial) {
+  if (!metadataPeerIsCurrent(pc, id, serial)) return;
+  stopMetadata();
+  metadataStatus.textContent = '框／GPS 連線中…';
+  let ws;
+  try {
+    ws = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//`+
+      `${location.host}/events/${id}`);
+  } catch (_) {
+    retryMetadata(pc, id, serial); return;
+  }
+  socket = ws;
+  const current = () => metadataPeerIsCurrent(pc, id, serial) && socket === ws;
+  // A stalled WebSocket handshake must not close or stall the video peer.
+  metadataOpenTimer = setTimeout(() => {
+    if (current()) retryMetadata(pc, id, serial);
+  }, 10000);
+  ws.onopen = () => {
+    if (!current()) return;
+    clearTimeout(metadataOpenTimer); metadataOpenTimer = null;
+    metadataRetrySeconds = 1;
+    metadataStatus.textContent = '框／GPS 已連線';
+  };
+  ws.onmessage = event => {
+    if (!current()) return;
+    let data;
+    try { data = JSON.parse(event.data); } catch (_) { return; }
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'origin' && Number.isFinite(data.rtpOrigin)) origin = data.rtpOrigin >>> 0;
+    if (data.type === 'detection' && data.generation === generation) {
+      detections.push(data);
+      if (detections.length > 180) detections.shift();
+    }
+  };
+  ws.onclose = ws.onerror = () => { if (current()) retryMetadata(pc, id, serial); };
 }
 
 function draw(now, frame) {
@@ -111,7 +182,7 @@ else status.textContent = 'This browser requires requestVideoFrameCallback.';
 
 async function connect() {
   const serial = ++connectionSerial;
-  const pc = new RTCPeerConnection(); peer = pc;
+  const pc = new RTCPeerConnection(iceConfiguration); peer = pc;
   lastDecodedFrames = null;
   pc.addTransceiver('video', {direction:'recvonly'});
   pc.ontrack = event => { video.srcObject = event.streams[0]; video.play().catch(()=>{}); };
@@ -123,37 +194,40 @@ async function connect() {
   };
   try {
     await pc.setLocalDescription(await pc.createOffer());
-    if (pc.iceGatheringState !== 'complete') await Promise.race([
-      new Promise(resolve => pc.addEventListener('icegatheringstatechange', function check() {
+    if (pc.iceGatheringState !== 'complete') await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pc.removeEventListener('icegatheringstatechange', check);
+        reject(Error('TURN ICE gathering timeout'));
+      }, 10000);
+      function check() {
         if (pc.iceGatheringState === 'complete') {
+          clearTimeout(timer);
           pc.removeEventListener('icegatheringstatechange', check); resolve();
         }
-      })),
-      new Promise((_, reject) => setTimeout(()=>reject(Error('ICE gathering timeout')),10000))
-    ]);
+      }
+      pc.addEventListener('icegatheringstatechange', check);
+      check();
+    });
+    if (!/a=candidate:.* typ relay/m.test(pc.localDescription.sdp)) {
+      throw Error('TURN allocation failed: no relay candidate');
+    }
     const controller = new AbortController();
     const timeout = setTimeout(()=>controller.abort(),15000);
     let response;
     try { response = await fetch('/offer', {method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(pc.localDescription), signal:controller.signal}); }
+      body:JSON.stringify({sdp:pc.localDescription.sdp, type:pc.localDescription.type,
+        clientRevision:frontendRevision, reconnectReason:lastReconnectReason}),
+      signal:controller.signal}); }
     finally { clearTimeout(timeout); }
     if (!response.ok) throw Error(await response.text());
     const answer = await response.json();
-    if (serial !== connectionSerial || pc !== peer) return pc.close();
+    if (stopped || serial !== connectionSerial || pc !== peer) return pc.close();
     await pc.setRemoteDescription({sdp:answer.sdp,type:answer.type});
+    if (stopped || serial !== connectionSerial || pc !== peer) return pc.close();
     generation = answer.generation;
-    socket = new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//`+
-      `${location.host}/events/${answer.peerId}`);
-    socket.onmessage = event => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'origin') origin = data.rtpOrigin >>> 0;
-      if (data.type === 'detection' && data.generation === generation) {
-        detections.push(data);
-        if (detections.length > 180) detections.shift();
-      }
-    };
-    socket.onclose = () => { if (pc === peer) reconnect('metadata connection closed'); };
+    peerId = answer.peerId;
+    connectMetadata(pc, peerId, serial);
   } catch (error) {
     if (pc === peer) reconnect(error.message);
   }
@@ -180,24 +254,23 @@ setInterval(async () => {
   } catch (_) {}
 }, 1000);
 setInterval(async () => {
+  const pc = peer, id = peerId, serial = connectionSerial;
   try {
     const response = await fetch('/api/health', {cache:'no-store'});
+    if (!response.ok) return;
     const health = await response.json();
-    if (!health.rtsp.connected && peer) reconnect('RTSP reconnecting');
+    if (stopped || !pc || pc !== peer || serial !== connectionSerial) return;
+    if (health.rtsp?.connected === false) reconnect('RTSP reconnecting');
+    else if (id && Array.isArray(health.peers) && !health.peers.some(item => item.id === id)) {
+      reconnect('viewer session no longer exists');
+    }
   } catch (_) {}
 }, 2000);
-document.getElementById('capture').onclick = async () => {
-  const message = document.getElementById('message');
-  try {
-    const response = await fetch('/api/capture', {method:'POST'});
-    const data = await response.json();
-    if (!response.ok) throw Error(data.error);
-    message.textContent = data.message;
-  } catch (error) { message.textContent = error.message; }
-};
 window.addEventListener('pagehide', () => {
   stopped = true; if (retryTimer) clearTimeout(retryTimer);
-  socket?.close(); peer?.close();
+  stopMetadata(); peer?.close();
 });
 connect();
 </script></body></html>"""
+
+HTML = HTML.replace("__UI_REVISION__", UI_REVISION)

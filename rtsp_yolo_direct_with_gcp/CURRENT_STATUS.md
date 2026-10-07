@@ -1,4 +1,162 @@
-# RTSP 直傳／YOLO 專案現況
+# RTSP／YOLO／GPS + GCP TURN 現況
+
+更新：2026-10-07（Asia/Taipei）。此版本完整複製自同日的
+`rtsp_yolo_direct`，加入 GCP TURN。**下面保留的舊同步／耐久測試屬於原版，
+不是 GCP TURN 版本的長時間實測結果。**
+
+## 目前可用的設定
+
+- TURN 公網 IP：`104.155.197.179`，帳號：`uav`。
+- 使用者於 2026-10-07 確認：目前 TURN 帳號與密碼不會到期，無需定期更新憑證。
+- 已測通 `3478/UDP`、`3478/TCP`；預設 URL 為
+  `turn:104.155.197.179:3478?transport=udp`。
+- 密碼僅寫在本機 `.turn.env`，權限 `600`，Git 排除；未寫入原始碼、
+  文件、`/api/health` 或結構化事件。搬移此資料夾時需另帶設定檔。
+- 瀏覽器與 Jetson 均強制使用 TURN relay；沒有 relay 候選時明確失敗，
+  不會退回 Google STUN 或直連。連線成功再檢查實際候選 pair 是 `relay/relay`。
+- 網頁、signaling、YOLO 框／GPS 的 WebSocket 維持用 Jetson 的 Tailscale 位址；
+  影像的 TURN 連線目的地是 GCP 公網 IP。是否透過 exit node 仍由系統路由決定。
+- 新版網頁預設 `8081`，事件紀錄 `diagnostics/gcp_turn_<時間>/`，
+  模型共用根目錄的 `test2.engine`。截圖功能已移除。
+- RTSP 封包分流、300 ms pacing、YOLO 隔幀推論／容量 1 佇列、legacy／ByteTrack、
+  GPS 歷史配對、Canvas class／經緯度標籤、單一觀看連線、健康監控均保留。
+- 首張畫面等 10 秒／停格 5 秒的前端強制重連維持移除；其他 WebRTC failed／closed、
+  RTSP 中斷與影像建立連線錯誤的整體重連保留。metadata WebSocket 已改為獨立重連。
+
+## 2026-10-07：移除截圖功能
+
+依使用者要求，只從 `rtsp_yolo_direct_with_gcp` 移除截圖功能：
+
+- 移除「立即儲存 5 張」按鈕、截圖訊息區與前端請求。
+- 移除 `/api/capture`、推論端截圖請求、圖片複製／註記與背景寫檔執行緒，
+  並刪除不再使用的 `capture.py`。
+- 原版 `rtsp_yolo_direct` 與先前已儲存的圖片保留；影片、YOLO／GPS、
+  Canvas 對齊、300 ms 緩衝與重連設定維持原有行為。
+
+頁面版本更新為 `20261007.3`。套用需重新啟動 GCP 版，並重新整理觀看頁面；
+瀏覽器仍顯示舊按鈕時可使用 Ctrl+F5。未替使用者重新啟動現行串流。
+
+驗證：前端模擬測試 **26 項**、Python TURN／metadata 測試 **15 項**全部通過。
+另確認截圖 API 回傳 404、影片與資料路由仍可解析，並以模擬模型檢查
+推論初始化、產生含 PTS 的辨識結果與關閉流程；Python 語法及執行時 HTML 檢查通過。
+本次未啟動正式相機或進行瀏覽器實機播放測試。
+
+## 2026-10-07：送出緩衝提高至 300 ms
+
+依使用者要求，只將 GCP 版 `--playout-delay-ms` 的預設值由 150 ms 改為 300 ms，
+增加吸收雲台到 Jetson 送流空檔的餘裕。此項是 Jetson 依來源 PTS 送出 WebRTC
+封包的 pacing buffer；沒有更改雲台內部設定、RTSP `max_delay`、TURN 或疊圖對齊條件。
+相較舊設定增加 150 ms 的設定緩衝延遲，實際流暢度改善仍待觀看比較。
+參數載入確認預設為 300 ms，且明確指定 150／0 ms 仍可覆蓋；未重新啟動現行串流。
+套用需重新啟動 GCP 版，並移除或改掉啟動命令中可能已有的 `--playout-delay-ms 150`。
+下方原版歷史紀錄中的 150 ms 保留為當時量測與設定紀錄。
+
+## 2026-10-07：框／GPS 資料通道獨立重連
+
+依使用者要求，先只修改 `rtsp_yolo_direct_with_gcp`，修正原版重連缺點的第一點：
+**WebSocket 斷線不再連影片一起關掉。**
+
+- 框／GPS WebSocket 以獨立的 1／2／4／8 秒退避重接同一個 peer；
+  不呼叫整體 `reconnect()`，不重新 `/offer`，不重建 WebRTC。
+- 保留 RTP origin、generation、影片 PTS 與最近 180 筆辨識歷史。
+  中斷時沿用來源 PTS 差距小於 1 秒的疊圖規則，資料過舊便不顯示框／座標；
+  資料恢復且與影片對齊後繼續顯示，不額外補播斷線期間的辨識資料。
+- 資料連線建立超過 10 秒未完成時只重試 WebSocket；成功開啟後重設資料退避。
+  頁面新增獨立「框／GPS」連線狀態，影片的連線狀態與 RTP 統計持續運作。
+- 後端重送原有 RTP origin；新 socket 取代舊佇列時結束舊資料通道，
+  舊連線清理不會清掉新佇列。新增 receive 迴圈以處理 pong／close 與閒置斷線。
+- 忽略舊 socket 的延遲訊息／事件與舊影像 peer 的健康結果；整體重連及離開頁面時
+  取消資料重試與建立逾時，避免留下重複連線。
+- WebRTC failed／closed、RTSP 中斷與影像建立失敗仍走原本整體重連。
+  若成功取得 `/api/health` 且確認目前 peer 已不存在，也重建影片以恢復後端重啟後的會話；
+  健康請求失敗或沒有 peers 欄位本身不觸發此條件。
+
+驗證：新版前端模擬測試 **26 項**、新版 Python TURN／metadata 測試 **15 項**全數通過，
+涵蓋影像保持、對齊恢復、過舊框隱藏、資料退避／逾時、舊事件、頁面離開、後端 peer 消失、
+重送 origin、資料佇列替換及閒置斷線。Python／執行時 HTML 的 JavaScript 語法檢查通過。
+本次未啟動正式串流或重新進行遠端實機斷網測試；套用需重新啟動 GCP 版並重整網頁。
+
+## 2026-10-07 12:03–12:05：使用者回報仍出現 metadata connection closed
+
+檢查 [`diagnostics/gcp_turn_20261007_120343/events.jsonl`](../diagnostics/gcp_turn_20261007_120343/events.jsonl)：
+9 次 `peer_closing` 的原因都是 `superseded_by_new_offer`，最後 1 次為使用者停止服務時的
+`server_shutdown`。12:04:05、12:04:25、12:04:45、12:05:05 被替換的 peer 當時仍為
+WebRTC `connected`、ICE `completed`、`relay_verified: true`，metadata 仍連線，
+最後 RTP 送出距離關閉只有 0.013–0.017 秒。RTSP 在這段期間保持連線。
+
+這份紀錄確認影片是被後續的新 `/offer` 取代；尚無法僅憑事件紀錄判定新 offer
+來自哪一個分頁。`metadata connection closed` 字串已不在目前 GCP 前端程式中，
+仍存在於原版前端；舊頁面、另一個仍重試的分頁或觀看到不同版本是待排查方向。
+後端重啟不會更新已經載入的瀏覽器 JavaScript。排查時先關閉所有舊觀看分頁，
+重新啟動 GCP 版後只開一個 `http://<jetson-tailscale-ip>:8081/`，必要時強制重新載入。
+新版頁面應有獨立的「框／GPS」連線狀態。若使用 `--port` 指定其他 port，請開該 port。
+
+本次查詢時 Jetson 的 8080／8081 均未監聽，最近一次 GCP 程式已於 12:05:17 停止，
+因此沒有直接取得當時瀏覽器實際載入的 HTML，也未確認上述排查後的結果。
+使用者後續確認觀看的是 8081；不能只憑 port 確認頁面已載入最新 JavaScript。
+
+已補上頁面版本 `GCP · 資料獨立重連 · 20261007.2`、
+`/api/health.settings.frontend_revision` 與 `X-Frontend-Revision` 回應標頭。
+新版 offer 會提供前端版本與重連原因，後端寫入 `peer_created.client_revision`、
+`client_reconnect_reason`；未提供的舊頁面標記為 `unknown`。
+另記錄 metadata 連上／斷開事件，協助分辨單純資料重接與影片被新 offer 取代。
+尚未改動單一觀看取代政策，也沒有證實此次新 offer 的前端來源。
+
+## 本次已完成驗證
+
+測試由此 Jetson 對實際 GCP TURN 執行；兩個測試端均在此 Jetson。
+
+| 項目 | UDP 3478 | TCP 3478 |
+| --- | --- | --- |
+| 帳密驗證與兩個 relay allocations | 通過 | 通過 |
+| ICE 實際選中 relay/relay | 通過 | 通過 |
+| 五次小型雙向資料往返 | 通過，71.00–90.17 ms | 通過，66.60–176.65 ms |
+| WebRTC ICE／DTLS／H.264 RTP | 通過 | 通過 |
+| 接收解碼合成 160×120 H.264 影格 | 5 張 | 5 張 |
+
+H.264 測試使用此版真正的 `EncodedTrack` 接收預先壓縮的合成封包；
+只有診斷程式產生測試影像，正式串流仍不重新編碼。測試指令：
+
+```bash
+python -m rtsp_yolo_direct_with_gcp.check_turn --both
+python -m rtsp_yolo_direct_with_gcp.check_turn --both --webrtc
+```
+
+新增 TURN Python 測試 **10 項**、原版 backend／GPS 回歸 **16 項**全部通過。
+首次整合時新版前端 **16 項**、原版前端 **14 項**全部通過；
+資料通道獨立重連後的新測試數與結果見上方 2026-10-07 章節。
+啟動參數與 JavaScript 語法檢查通過；密碼 Git 排除與原功能檔案一致性另做檢查。
+未啟動正式相機程式，未占用相機／GPS，未更改 GCP VM、GCP 防火牆或 Tailscale 設定。
+
+## 尚待驗證事項
+
+目前 IP、帳號、密碼已足夠完成接入，port／傳輸方式也已實測，不需要提供
+GCP 專案 ID、VM zone 或 SSH 金鑰才能使用此版。
+帳密目前不會到期，沒有尚缺的必要連線資訊。
+
+- 待用實際觀看端網路／瀏覽器測真實相機、YOLO／GPS 對齊與斷線恢復。
+  合成影格短測不代表相機碼率下的一週穩定性，也未逐一確認整個 relay UDP port 範圍。
+- 目前一次使用一個 TURN URL；UDP 失敗不會自動切 TCP，可用 `--turn-url` 手動選擇。
+  尚未設定 TLS；若需要 `turns:`，再提供 TLS port 與可驗證憑證對應的網域。
+- TURN 無法修復相機停止送 RTP，也不會保留重建前的 peer、metadata 或 PTS 原點。
+  網頁／metadata 仍依賴 Tailscale；單獨 metadata 斷線已不再觸發影片重連。
+  真正整體重建影片時，原 peer、metadata 歷史與 PTS 原點仍會重設。
+- aiortc **1.15.0**／aioice **0.10.2** 已測通。後端 relay policy 透過
+  aioice `_transport_policy` 設定；套件升級後需重跑 TURN／WebRTC 檢查。
+  aiortc 目前不產生 `disconnected` 狀態，舊的 disconnected 逾時分支不能當作
+  所有斷線狀況都會在五秒內重建的保證。
+
+啟動與設定說明見 [README.md](README.md)。先停止原版，再從專案根目錄執行：
+
+```bash
+python -m rtsp_yolo_direct_with_gcp
+```
+
+瀏覽器開啟 `http://<jetson-tailscale-ip>:8081/`。
+
+---
+
+## 原版歷史紀錄（完整保留）
 
 更新：2026-10-07（Asia/Taipei）。相機為使用者確認的亞拓 **G3P V2 4K**
 三軸雲台；亞拓官方產品型號為 `RGG308XW`。RTSP 位址為
@@ -487,7 +645,7 @@ Tailscale 方案，另外規劃 Cloudflare TURN 與公網 VPS／WireGuard
 
 | 條件 | 目前行為與可能結果 |
 | --- | --- |
-| 框／座標 WebSocket 關閉 | 前端呼叫整體 `reconnect()`，即使影片仍能播放，也會關掉 WebRTC。 |
+| 框／座標 WebSocket 關閉 | 原版會呼叫整體 `reconnect()` 並關掉 WebRTC；**GCP 版於 2026-10-07 已改成資料通道獨立重連**，詳見本文頂部。 |
 | 播放中約 5 秒沒有新影格，或 connected 後 10 秒沒有首張畫面 | **2026-10-07 已移除此強制重連條件**；沒有其他斷線事件時保留目前連線等待恢復，持續無畫面可手動重整網頁。 |
 | 找不到可用的影片／辨識配對 | 每個顯示影格先清空 Canvas，無配對便沒有框與座標；配對失敗本身不會關閉影片。 |
 

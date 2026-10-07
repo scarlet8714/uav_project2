@@ -1,5 +1,6 @@
 // Run: node --test diagnostics/test_direct_video_timeout.cjs
 // Execute the actual browser script with a fake clock, video, and WebRTC peer.
+// Video stalls must wait for recovery; connection failures still reconnect.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -11,7 +12,8 @@ const script = source.split('<script>')[1].split('</script>')[0].replace(/connec
 
 async function browser({frameCallbacks = true} = {}) {
   let now = 0, frameCallback = null, nextTimerId = 1;
-  const timers = new Map(), intervals = [], listeners = {}, peers = [];
+  let rtspConnected = true;
+  const timers = new Map(), intervals = [], listeners = {}, peers = [], sockets = [];
   const drawing = new Proxy({}, {get: () => () => {}});
   const elements = new Map();
   for (const id of ['video', 'overlay', 'status', 'transport', 'capture', 'message']) {
@@ -47,7 +49,10 @@ async function browser({frameCallbacks = true} = {}) {
   const context = vm.createContext({
     document, window: {addEventListener: () => {}},
     performance: {now: () => now}, RTCPeerConnection: Peer,
-    WebSocket: class {close() {}}, AbortController,
+    WebSocket: class {
+      constructor() {sockets.push(this);}
+      close() {}
+    }, AbortController,
     location: {protocol: 'http:', host: 'localhost'},
     setInterval: (fn, delay) => {intervals.push({fn, delay});},
     setTimeout: (fn, delay) => {
@@ -56,17 +61,24 @@ async function browser({frameCallbacks = true} = {}) {
     clearTimeout: id => timers.delete(id),
     fetch: async url => ({ok: true, json: async () => url === '/offer'
       ? {sdp: 'answer', type: 'answer', generation: 1, peerId: 'test'}
-      : {rtsp: {connected: true}}}),
+      : {rtsp: {connected: rtspConnected}}}),
   });
   vm.runInContext(script, context);
   await vm.runInContext('connect()', context);
   const poll = intervals.find(item => item.delay === 1000).fn;
+  const healthPoll = intervals.find(item => item.delay === 2000).fn;
   return {
-    peers, timers, context, document, elements,
+    peers, sockets, timers, context, document, elements,
     pollAt: async time => {now = time; await poll();},
+    healthAt: async (time, connected) => {
+      now = time; rtspConnected = connected; await healthPoll();
+    },
+    peerState: state => {
+      const pc = peers.at(-1); pc.connectionState = state; pc.onconnectionstatechange();
+    },
     frameAt: time => {now = time; frameCallback(time, {rtpTimestamp: 1});},
     visibleAt: time => {
-      now = time; document.hidden = false; listeners.visibilitychange();
+      now = time; document.hidden = false; listeners.visibilitychange?.();
     },
     retry: async () => {
       const [id, timer] = [...timers][0]; timers.delete(id); timer.fn();
@@ -77,25 +89,32 @@ async function browser({frameCallbacks = true} = {}) {
   };
 }
 
-test('healthy RTSP with no first frame reconnects after 10 seconds', async () => {
+test('healthy RTSP with no first frame stays connected beyond 10 seconds', async () => {
   const b = await browser();
-  await b.pollAt(9999);
-  assert.equal(b.peers[0].connectionState, 'connected');
-  await b.pollAt(10000);
-  assert.equal(b.peers[0].connectionState, 'closed');
-  assert.match(b.reason(), /first video frame timeout/);
-  assert.equal(b.timers.size, 1);
+  for (const time of [9999, 10000, 60000]) {
+    await b.pollAt(time); await b.healthAt(time, true);
+    assert.equal(b.peers[0].connectionState, 'connected');
+    assert.equal(b.timers.size, 0);
+  }
+  b.frameAt(61000);
+  assert.equal(b.peers.length, 1);
 });
 
-test('frozen displayed video reconnects even when RTP and decoding keep advancing', async () => {
+test('frozen displayed video waits and resumes on the same connection', async () => {
   const b = await browser();
   b.frameAt(1000);
   b.peers[0].packets = 10000; b.peers[0].decoded = 1000;
-  await b.pollAt(5999);
-  assert.equal(b.peers[0].connectionState, 'connected');
-  await b.pollAt(6000);
-  assert.match(b.reason(), /video stalled/);
-  assert.equal(b.timers.size, 1);
+  for (const time of [5999, 6000, 60000]) {
+    await b.pollAt(time);
+    assert.equal(b.peers[0].connectionState, 'connected');
+    assert.equal(b.timers.size, 0);
+  }
+  // Even when packets and decoding stop, absence of frames alone must not reconnect.
+  await b.pollAt(120000); await b.healthAt(120000, true);
+  b.frameAt(121000);
+  assert.equal(b.peers.length, 1);
+  assert.equal(b.timers.size, 0);
+  assert.match(b.elements.get('transport').textContent, /1000 decoded frames/);
 });
 
 test('regular displayed frames keep the connection alive', async () => {
@@ -107,66 +126,101 @@ test('regular displayed frames keep the connection alive', async () => {
   assert.equal(b.timers.size, 0);
 });
 
-test('background tabs do not timeout and get a new grace period on return', async () => {
+test('background tabs and returning foreground video do not trigger reconnects', async () => {
   const b = await browser();
   b.frameAt(1000); b.document.hidden = true;
   await b.pollAt(60000);
   assert.equal(b.timers.size, 0);
   b.visibleAt(60000);
-  await b.pollAt(69999);
+  await b.pollAt(70000); await b.pollAt(120000);
+  assert.equal(b.peers[0].connectionState, 'connected');
   assert.equal(b.timers.size, 0);
-  await b.pollAt(70000);
-  assert.match(b.reason(), /first video frame timeout/);
-});
-
-test('returning foreground video resets the grace period', async () => {
-  const b = await browser();
-  b.document.hidden = true; await b.pollAt(60000);
-  b.visibleAt(60000); b.frameAt(61000); await b.pollAt(65000);
+  b.frameAt(121000);
   assert.equal(b.timers.size, 0);
 });
 
-test('stats fallback tracks decoded frames when frame callbacks are unavailable', async () => {
+test('stalled decoded frames do not reconnect when frame callbacks are unavailable', async () => {
   const b = await browser({frameCallbacks: false});
   b.peers[0].decoded = 1; await b.pollAt(1000);
   b.peers[0].decoded = 2; await b.pollAt(5000);
-  await b.pollAt(9999);
+  await b.pollAt(10000); await b.pollAt(60000);
+  assert.equal(b.peers[0].connectionState, 'connected');
   assert.equal(b.timers.size, 0);
-  await b.pollAt(10000);
-  assert.match(b.reason(), /video stalled/);
 });
 
-test('a failed stats call does not disable frame timeout', async () => {
+test('failed stats calls do not close the connection', async () => {
   const b = await browser();
   b.peers[0].getStats = async () => {throw Error('stats unavailable');};
   await b.pollAt(1000);
-  await b.pollAt(10000);
-  assert.match(b.reason(), /first video frame timeout/);
+  await b.pollAt(60000);
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.equal(b.timers.size, 0);
 });
 
-test('a pending stats call does not disable the next timeout check', async () => {
+test('pending stats calls do not close the connection', async () => {
   const b = await browser();
-  b.peers[0].getStats = () => new Promise(() => {});
-  b.pollAt(1000);
-  await b.pollAt(10000);
-  assert.match(b.reason(), /first video frame timeout/);
+  let finish;
+  b.peers[0].getStats = () => new Promise(resolve => {finish = resolve;});
+  const pending = b.pollAt(1000);
+  await b.healthAt(60000, true);
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.equal(b.timers.size, 0);
+  finish(new Map()); await pending;
 });
 
-test('timeout schedules one retry and consecutive black screens use backoff', async () => {
+test('WebRTC failures schedule one retry with 1, 2, 4, 8 second backoff', async () => {
   const b = await browser();
-  await b.pollAt(10000); await b.pollAt(20000);
+  for (const delay of [1000, 2000, 4000, 8000, 8000]) {
+    b.peerState('failed');
+    b.peers.at(-1).onconnectionstatechange();
+    assert.equal(b.peers.at(-1).connectionState, 'closed');
+    assert.match(b.reason(), /Reconnecting: failed/);
+    assert.equal(b.timers.size, 1);
+    assert.equal([...b.timers.values()][0].delay, delay);
+    await b.retry();
+  }
+});
+
+test('closed WebRTC connections still reconnect', async () => {
+  const b = await browser();
+  b.peerState('closed');
+  assert.match(b.reason(), /Reconnecting: closed/);
   assert.equal(b.timers.size, 1);
-  assert.equal([...b.timers.values()][0].delay, 1000);
-  await b.retry();
-  assert.equal(b.peers.length, 2);
-  await b.pollAt(30000);
-  assert.equal([...b.timers.values()][0].delay, 2000);
+});
+
+test('metadata closure still reconnects and late old socket events are ignored', async () => {
+  const b = await browser();
+  const oldSocket = b.sockets[0];
+  oldSocket.onclose();
+  assert.match(b.reason(), /metadata connection closed/);
+  assert.equal(b.peers[0].connectionState, 'closed');
+  assert.equal(b.timers.size, 1);
+  await b.retry(); oldSocket.onclose();
+  assert.equal(b.peers[1].connectionState, 'connected');
+  assert.equal(b.timers.size, 0);
+});
+
+test('unhealthy RTSP still reconnects without waiting for a video timeout', async () => {
+  const b = await browser();
+  await b.healthAt(2000, false);
+  assert.match(b.reason(), /RTSP reconnecting/);
+  assert.equal(b.peers[0].connectionState, 'closed');
+  assert.equal(b.timers.size, 1);
 });
 
 test('a real frame after retry resets backoff', async () => {
   const b = await browser();
-  await b.pollAt(10000); await b.retry();
-  b.frameAt(11000); await b.pollAt(16000);
+  b.peerState('failed'); await b.retry();
+  b.peerState('failed'); await b.retry();
+  b.frameAt(11000); b.peerState('failed');
+  assert.equal([...b.timers.values()][0].delay, 1000);
+});
+
+test('decoded frame progress after retry resets backoff without frame callbacks', async () => {
+  const b = await browser({frameCallbacks: false});
+  b.peerState('failed'); await b.retry();
+  b.peers[1].decoded = 1; await b.pollAt(1000);
+  b.peerState('failed');
   assert.equal([...b.timers.values()][0].delay, 1000);
 });
 
@@ -175,9 +229,12 @@ test('late stats results from an old peer cannot update the new connection', asy
   let finish;
   b.peers[0].getStats = () => new Promise(resolve => {finish = resolve;});
   const oldPoll = b.pollAt(1000);
-  await b.pollAt(10000); await b.retry();
+  b.peerState('failed'); await b.retry();
   finish(new Map([['video', {type: 'inbound-rtp', kind: 'video', framesDecoded: 100}]]));
   await oldPoll;
-  await b.pollAt(20000);
-  assert.match(b.reason(), /first video frame timeout/);
+  assert.doesNotMatch(b.elements.get('transport').textContent, /100 decoded frames/);
+  b.peers[1].decoded = 1; await b.pollAt(20000);
+  assert.match(b.elements.get('transport').textContent, /1 decoded frames/);
+  b.peerState('failed');
+  assert.equal([...b.timers.values()][0].delay, 1000);
 });
