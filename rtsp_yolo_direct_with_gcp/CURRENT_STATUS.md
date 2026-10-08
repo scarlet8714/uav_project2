@@ -1,10 +1,35 @@
 # RTSP／YOLO／GPS + GCP TURN 現況
 
-更新：2026-10-07（Asia/Taipei）。此版本完整複製自同日的
+更新：2026-10-08（UTC）。
+
+## 2026-10-08：GCP WireGuard／HTTPS／WSS 安裝完成，等待 Jetson
+
+使用者於 VM SSH 執行安裝，04:45:27 UTC 完成，
+`setup-state.json.status = gcp_ready_waiting_for_jetson`。
+已核對安裝紀錄、GCP 防火牆／VM 標記讀回，以及實際 Nginx、續期 systemd 設定和開機啟動連結。
+
+- GCP `wg-uav`、Nginx、憑證續期 timer 已部署並設定開機啟動；
+  安裝時皆通過 active／enabled 檢查。
+- 公網入口 `https://104.155.197.179/`；Nginx 透過 WireGuard 代理 `10.77.0.2:8081`，
+  已有 WebSocket Upgrade、登入保護、HTTP 轉 HTTPS 與 ACME 驗證路徑。
+- 防火牆 TCP 80／443、UDP 51820 與 `uav-web-relay` 標記讀回成功；既有 MAVLink／TURN 標記保留。
+- 正式 IP 憑證、本機 HTTPS 401、憑證續期 dry-run 通過。
+  此次憑證到期為 2026-10-14 19:46:42 UTC；每 12 小時檢查續期，成功後 Nginx reload。
+- Apache2 80 埠衝突與安裝腳本誤判分開的 TCP 規則已解決；安裝包 21 項離線測試通過。
+
+**尚待 Jetson 公鑰登記、handshake、GCP → Jetson、觀看端公網 HTTPS／WSS、TURN 影片與框／GPS 實測。**
+`end_to_end_verified` 仍為 false。工具環境直連公網 443 未取得 HTTP 回應，
+本次確認範圍是安裝紀錄與部署設定，沒有新增外部連通或耐久測試結果。
+Jetson 下一步、真實 GCP 公鑰與驗收方式見 [NEXT_STEP.md](NEXT_STEP.md)。
+此次檢查未重啟服務或執行相機／YOLO 程式。
+
+## 2026-10-07：以下保留既有程式現況及部署前規劃
+
+原紀錄更新：2026-10-07（Asia/Taipei）。此版本完整複製自同日的
 `rtsp_yolo_direct`，加入 GCP TURN。**下面保留的舊同步／耐久測試屬於原版，
 不是 GCP TURN 版本的長時間實測結果。**
 
-## 目前進度：準備設定 GCP WireGuard＋反向代理
+## 2026-10-07 當時進度：準備設定 GCP WireGuard＋反向代理
 
 截至本次更新，**GCP TURN 已接入程式；WireGuard、Nginx 與公網 HTTPS／WSS
 仍在設定準備階段，尚未部署或驗證。**網頁與框／GPS 目前仍走 Tailscale。
