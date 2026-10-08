@@ -1,3 +1,8 @@
+# 複製時的 WebSocket 版本狀態（歷史參考）
+
+以下為來源版本在複製時的紀錄，不代表 DataChannel 版本已完成實機觀看驗證。
+目前版本請讀 [CURRENT_STATUS.md](CURRENT_STATUS.md)。
+
 # RTSP／YOLO／GPS + GCP TURN 現況
 
 更新：2026-10-08（UTC）。

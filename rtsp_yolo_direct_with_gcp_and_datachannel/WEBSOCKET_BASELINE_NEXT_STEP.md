@@ -1,3 +1,8 @@
+# 複製時的 WebSocket 版本接續文件（歷史參考）
+
+以下保留來源版本的安裝、網路與串流查核步驟；目前 DataChannel 版本請讀
+[NEXT_STEP.md](NEXT_STEP.md)。不要把下方舊模組啟動命令當成本版命令。
+
 # Jetson 接續：WireGuard + GCP HTTPS／WebSocket
 
 更新：2026-10-08（UTC）。此文件供下一位在 **Jetson** 操作的人／代理接續。
