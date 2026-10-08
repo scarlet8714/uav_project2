@@ -105,10 +105,13 @@ sudo ss -lntup
 
 ## 2. 安裝 Jetson WireGuard
 
-從 GCP 安裝包複製**這兩個程式檔**到 Jetson 的 `~/gcp_web_relay_setup/`：
+Jetson 安裝所需的兩個檔案已複製到本資料夾的 `jetson_setup/`，會隨專案一起帶到 Jetson：
 
-- `setup_jetson_wireguard.py`
-- `relay_config.py`
+- [jetson_setup/setup_jetson_wireguard.py](jetson_setup/setup_jetson_wireguard.py)
+- [jetson_setup/relay_config.py](jetson_setup/relay_config.py)
+
+不需再另外複製專案外的 `~/gcp_web_relay_setup/`。兩個檔案應保留在同一個資料夾，
+安裝腳本會從旁邊的 `relay_config.py` 載入設定；GCP 安裝包的原檔仍保留。
 
 目前 GCP 的真實 WireGuard 公鑰如下，來源是安裝成功後的 `relay-info.json`：
 
@@ -119,11 +122,12 @@ OWLiMFkAHHr3Mx58Bodkcs0FBAG/0M5Q4UJBBbBlDRc=
 公鑰可以交換並記錄；如日後主動輪替 GCP 金鑰，需改用最新 `gcp_public_key`。
 不要複製 `web-login.txt`、任何 `/etc/wireguard/*.key` 或整份含私鑰的設定。
 
-在 Jetson 執行：
+在 Jetson 執行，以下以專案根目錄 `~/uav_project2` 為例；目錄不同時改成實際路徑：
 
 ```bash
+cd ~/uav_project2
 GCP_PUBLIC_KEY='OWLiMFkAHHr3Mx58Bodkcs0FBAG/0M5Q4UJBBbBlDRc='
-sudo python3 ~/gcp_web_relay_setup/setup_jetson_wireguard.py --gcp-public-key "$GCP_PUBLIC_KEY"
+sudo python3 rtsp_yolo_direct_with_gcp/jetson_setup/setup_jetson_wireguard.py --gcp-public-key "$GCP_PUBLIC_KEY"
 ```
 
 腳本適用 Ubuntu／Debian + systemd、Python 3.8 以上，會安裝 WireGuard、在 Jetson 本機產生私鑰，
