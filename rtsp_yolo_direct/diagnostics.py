@@ -34,7 +34,8 @@ def format_event(kind, fields):
     for name in ("peer_id", "reason", "state", "connection_state", "generation",
                  "profile_id", "reconnects", "error", "sent_packets", "last_rtp_age_s",
                  "model_path", "tracker", "transport", "receive_max_delay_ms",
-                 "playout_delay_ms", "log_directory"):
+                 "playout_delay_ms", "log_directory", "frontend_revision",
+                 "client_revision", "client_reconnect_reason"):
         if name in fields:
             parts.append(f"{name}={fields[name]}")
     if kind in ("input_stall", "input_recovered"):

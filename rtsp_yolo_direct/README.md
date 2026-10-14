@@ -9,22 +9,66 @@ python -m rtsp_yolo_direct \
 ```
 
 預設模型為 `test2.engine`，可省略 `--model-path`，或用該參數指定其他模型。
+
+WebRTC 已加入與 `rtsp_yolo_direct_with_gcp_stun` 相同的 STUN／TURN 路徑：
+STUN `stun:104.155.197.179:3478`，TURN `turn:104.155.197.179:3478?transport=udp`。
+預設 ICE 策略為 `all`，允許 Tailscale／其他直連候選與 TURN 備援；不保證斷線時無縫切換。
+兩端皆使用模組內 `.turn.env` 的設定，帳密檔已排除版本控制、權限為 `600`。
+網頁、offer 與框／GPS WebSocket 仍走訪問網頁的位址，TURN 只提供影片的中繼路徑。
+UDP TURN 失敗時不會自動切換 TCP，可用 `--turn-url` 明確覆寫。
+頁面顯示影像直連／TURN 路徑，`/api/health` 的 `peers[].ice_pair` 及事件日誌也會記錄。
+
+可用 `--turn-config`、`--turn-url`、`--stun-url` 覆寫設定；
+`--ice-transport-policy relay` 可強制 TURN 進行比較，預設維持 `all`。
+不開相機與模型的 TURN 診斷：`python -m rtsp_yolo_direct.check_turn --webrtc`。
+
+目標 GPS 使用固定姿態與平坦地面的近似投影。預設參數已更新為：
+
+| 參數 | 預設值 |
+| --- | ---: |
+| `--altitude-agl-m` | 110 m（相機到地面的垂直高度） |
+| `--camera-pitch-deg` | -50°（0° 水平，-90° 垂直向下） |
+| `--camera-yaw-offset-deg` | 0°（畫面上方為正前方） |
+| `--hfov-deg` | 49.4° |
+| `--vfov-deg` | 29.7° |
+
+投影按針孔相機近似建立視線，再依固定 pitch 旋轉並與平坦地面求交點。
+以預設設定計算，畫面中心約在前方 92.3 m，上緣約 156.2 m，下緣約 51.6 m。
+方位仍用 GPS COG 近似機頭方向，roll 假設為零；尚未接入即時飛控／雲台
+姿態或鏡頭畸變校正。視線朝天空或地平線時保留偵測框，但不產生目標 GPS。
+參數可在啟動時覆寫；已在執行的程式需重新啟動生效。
+
 開啟 `http://<jetson-ip>:8080/`。測試時可用 `--port` 改變連接埠；
 若 GPS 尚未接上，可加 `--no-gps`。GPS 預設使用固定裝置路徑 `/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`，
 可用 `--gps-port` 指定其他路徑。來源預設使用 UDP，亦可指定
 `--transport tcp`。健康狀態在 `/api/health`，每次執行的事件紀錄位於
-`diagnostics/direct_<時間>/events.jsonl`，五張截圖位於同目錄的
-`captures/`。影片預設用 150 ms 的送出緩衝依來源 PTS 均勻送出，
+`diagnostics/direct_<時間>/events.jsonl`。截圖按鈕、API 與背景截圖處理
+已移除，既有截圖檔案保留。影片預設用 300 ms 的送出緩衝依來源 PTS 均勻送出，
 以吸收每秒關鍵影格造成的接收空檔；可用 `--playout-delay-ms 0`
 關閉，或指定其他毫秒數進行比較。
 
 前端不再因首張畫面等待超過 10 秒，或播放中停格超過 5 秒而強制
 重連；只要沒有其他斷線事件，就保留目前連線等待影格恢復。若一直
-沒有畫面，可手動重整網頁。WebRTC `failed`／`closed`、框／座標
-WebSocket 關閉、RTSP 健康狀態顯示中斷，以及連線建立錯誤仍會
-觸發自動重連。重連等待按 1、2、4、8 秒遞增，收到新畫面後才重設
+沒有畫面，可手動重整網頁。WebRTC `failed`／`closed`、RTSP 健康
+狀態顯示中斷、伺服器確認觀看連線已不存在，以及影片連線建立錯誤
+仍會觸發影片自動重連。重連等待按 1、2、4、8 秒遞增，收到新畫面後才重設
 為 1 秒；不支援影格 callback 時，以 `framesDecoded` 增量重設退避。
 影片下方的 RTP 統計仍每秒更新，單一觀看連線行為維持原設定。
+
+RTSP 開啟／讀取逾時預設為 8 秒，可用 `--rtsp-timeout` 覆寫。
+後端在 ICE `disconnected` 持續超過 8 秒後關閉觀看連線；監測每秒執行一次。
+已執行的服務需重新啟動生效，啟動時明確指定的 RTSP 逾時仍優先使用。
+
+框／GPS WebSocket 使用獨立的 1、2、4、8 秒重試，建立連線超過
+10 秒也只重試資料通道；成功開啟後重設資料通道的退避時間。
+資料斷線保留原 WebRTC、RTP origin、來源 generation 與偵測歷史，
+超過 1 秒的舊框仍按原規則隱藏，不會為了框消失而重建影片。
+伺服器在資料重接時重送同一個 RTP origin，舊資料連線的訊息與清理
+不會干擾新連線。頁面另顯示框／GPS 連線狀態。
+
+本次同步版本為 `20261013.turn.1`，可在頁面與 `/api/health` 的
+`settings.frontend_revision` 核對。更新後需重新啟動程式並重整觀看頁面。
+影片緩衝預設為 300 ms；直連設定、預設 8080 連接埠與 YOLO／GPS 對齊邏輯維持原設定。
 
 啟動串流的終端機現在會印出模型、傳輸方式、緩衝設定與事件紀錄路徑，
 之後每 5 秒印一行 `STATUS`：
@@ -83,8 +127,8 @@ Jetson 解碼器。YOLO 每 2 個解碼影格提交 1 個，並使用容量 1 �
 結果；未推論的中間影格沿用上一個可用結果的框。
 
 Canvas 保留偵測框，文字只顯示兩行：class 名稱與目標經緯度（小數
-7 位）。座標不可用時顯示 `--, --`。文字為粗體，實際顯示字級至少
-24 px，並調整標籤位置避免超出畫面；不再繪製信心值、確認次數、
+7 位）。座標不可用時顯示 `--, --`。文字為粗體，實際顯示字級固定
+20 px，文字不加黑底，並調整標籤位置避免超出畫面；不再繪製信心值、確認次數、
 PTS、FPS 或 GPS 接收器診斷面板。影片時間對齊持續運作。
 
 `test2.engine` 的固定配色如下，框與文字使用相同 class 顏色：
@@ -107,12 +151,11 @@ PTS、FPS 或 GPS 接收器診斷面板。影片時間對齊持續運作。
 | `config.py` | 命令列及相機投影參數 |
 | `source.py` | RTSP 接收、封包分流、Jetson 硬體解碼與斷線重連 |
 | `codec.py` | 根據來源 SPS 協商 H.264 profile |
-| `inference.py` | YOLO、連續影格確認、GPS 配對與截圖 |
+| `inference.py` | YOLO、連續影格確認與 GPS 配對 |
 | `byte_tracking.py` | 可選 ByteTrack 配對、目標確認與來源重置 |
 | `gps.py` | 從根目錄 `gps_geolocation.py` 複製的 GPS 讀取與座標投影 |
-| `capture.py` | 非同步五張截圖 |
 | `server.py` | WebRTC 訊號、單一觀看連線、看門狗、健康狀態及事件紀錄 |
-| `web.py` | 瀏覽器自動重連與 Canvas 顯示 |
+| `web.py` | 影片與資料各自重連、Canvas 顯示與時間對齊 |
 
 GPS 的 `gps_age_ms` 是以影格和 GPS 訊息抵達 Jetson 的 monotonic 時間
 計算，不是攝影機曝光與 GPS 測量的硬體時間差。GPS 沒有有效 fix 時仍可
@@ -129,3 +172,10 @@ fix 無效或缺少方向時不產生目標座標。尚無可配對歷史時回�
 速度為零或未提供也可使用。缺少方向數值時仍維持 `no_course`。
 靜止時 COG 不代表機身朝向；要恢復門檻可將 `gps.py` 的
 `MIN_SPEED_FOR_COG_MPS` 設回 `1.0`。
+
+不啟動攝影機與模型的回歸測試：
+
+```bash
+node diagnostics/test_direct_video_timeout.cjs
+python3 -m unittest rtsp_yolo_direct.test_metadata diagnostics.test_direct_backend_status diagnostics.test_direct_gps_history -v
+```

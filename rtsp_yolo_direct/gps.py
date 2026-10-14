@@ -41,9 +41,11 @@ def _configure_5hz(ser) -> None:
     ser.write(_ubx_command(0x06, 0x08, (200).to_bytes(2, "little") + b"\x01\x00\x00\x00"))
     ser.flush()
 
-# 相機固定參數：之後測到真實值再修改
-DEFAULT_HFOV_DEG = 70.0       # 水平 FOV，必須自行確認或量測
-DEFAULT_VFOV_DEG = 43.0       # 垂直 FOV，必須自行確認或量測
+# 固定的近似投影參數；pitch 0° 為水平，-90° 為垂直向下。
+DEFAULT_ALTITUDE_AGL_M = 110.0
+DEFAULT_CAMERA_PITCH_DEG = -50.0
+DEFAULT_HFOV_DEG = 49.4
+DEFAULT_VFOV_DEG = 29.7
 
 # 相機畫面上方相對於 COG 的偏移角
 # 0 = 畫面上方視為飛行方向
@@ -320,6 +322,7 @@ def pixel_to_ground_offset(
     altitude_agl_m: float,
     hfov_deg: float = DEFAULT_HFOV_DEG,
     vfov_deg: float = DEFAULT_VFOV_DEG,
+    camera_pitch_deg: float = DEFAULT_CAMERA_PITCH_DEG,
 ) -> tuple[float, float]:
     """
     將 YOLO bbox center 的 pixel 座標轉換成影像座標系下的地面位移。
@@ -344,7 +347,7 @@ def pixel_to_ground_offset(
         altitude_agl_m
             [目前建議手動輸入]
             相機距離地面的高度，單位 m
-            你的情況約 60 ~ 80
+            相機到平坦地面的垂直高度，預設設定為 110 m
 
         hfov_deg
             [手動設定]
@@ -354,19 +357,32 @@ def pixel_to_ground_offset(
             [手動設定]
             相機垂直 FOV
 
+        camera_pitch_deg
+            [手動設定]
+            0 度為水平，-90 度為垂直向下；預設 -50 度
+
     回傳：
         image_right_m
             + = 畫面右方
 
         image_forward_m
-            + = 畫面上方
+            + = 相機朝向的水平正前方；畫面上方投影到較遠處
 
     假設：
-        1. 相機垂直向下
+        1. 相機依固定 pitch 向下拍攝，畫面上方為正前方
         2. 地面近似平坦
-        3. 暫不補償 roll / pitch
+        3. roll 為零，pitch 固定；不接入即時機身／雲台姿態
         4. 暫不做鏡頭畸變校正
+
+    使用未校正的針孔相機近似，將視線旋轉後與地面求交點。
+    視線朝向天空或貼近地平線時拋出 ValueError，不產生目標座標。
     """
+
+    if not all(math.isfinite(value) for value in (
+        target_x, target_y, image_width, image_height, altitude_agl_m,
+        hfov_deg, vfov_deg, camera_pitch_deg,
+    )):
+        raise ValueError("Projection inputs must be finite.")
 
     if image_width <= 0 or image_height <= 0:
         raise ValueError("image_width and image_height must be positive.")
@@ -380,6 +396,9 @@ def pixel_to_ground_offset(
     if not (0.0 < vfov_deg < 180.0):
         raise ValueError("vfov_deg must be between 0 and 180.")
 
+    if not (-90.0 <= camera_pitch_deg < 0.0):
+        raise ValueError("camera_pitch_deg must be at least -90 and below 0.")
+
     # 正規化到 [-1, +1]
     nx = (target_x - image_width / 2.0) / (image_width / 2.0)
     ny = (target_y - image_height / 2.0) / (image_height / 2.0)
@@ -388,15 +407,19 @@ def pixel_to_ground_offset(
     nx = max(-1.0, min(1.0, nx))
     ny = max(-1.0, min(1.0, ny))
 
-    # 對應視線角
-    horizontal_angle_rad = math.radians(nx * hfov_deg / 2.0)
-    vertical_angle_rad = math.radians(ny * vfov_deg / 2.0)
+    # 針孔視線：x 向右，y 向下，光軸分量為 1。
+    ray_right = nx * math.tan(math.radians(hfov_deg / 2.0))
+    camera_down = ny * math.tan(math.radians(vfov_deg / 2.0))
+    depression = math.radians(-camera_pitch_deg)
+    sin_pitch, cos_pitch = math.sin(depression), math.cos(depression)
+    ray_forward = cos_pitch - camera_down * sin_pitch
+    ray_down = sin_pitch + camera_down * cos_pitch
+    if ray_down <= 1e-9:
+        raise ValueError("Camera ray does not intersect the ground below.")
 
-    # 高度投影到地面
-    image_right_m = altitude_agl_m * math.tan(horizontal_angle_rad)
-
-    # 影像 y 向下增加，所以畫面上方取正值
-    image_forward_m = -altitude_agl_m * math.tan(vertical_angle_rad)
+    scale = altitude_agl_m / ray_down
+    image_right_m = scale * ray_right
+    image_forward_m = scale * ray_forward
 
     return image_right_m, image_forward_m
 
@@ -451,7 +474,7 @@ def offset_to_gps(
     """
     將局部 North/East 位移近似轉換成 GPS 經緯度。
 
-    對你 60~80 m 高度、局部百米級偏移的情境，
+    對局部百米級偏移的情境，
     使用局部小距離近似即可作為 V1。
     """
 
@@ -494,6 +517,7 @@ def estimate_target_gps(
     hfov_deg: float = DEFAULT_HFOV_DEG,
     vfov_deg: float = DEFAULT_VFOV_DEG,
     camera_yaw_offset_deg: float = DEFAULT_CAMERA_YAW_OFFSET_DEG,
+    camera_pitch_deg: float = DEFAULT_CAMERA_PITCH_DEG,
 ) -> dict:
     """
     YOLO bbox center -> Target GPS
@@ -509,6 +533,7 @@ def estimate_target_gps(
         altitude_agl_m=altitude_agl_m,
         hfov_deg=hfov_deg,
         vfov_deg=vfov_deg,
+        camera_pitch_deg=camera_pitch_deg,
     )
 
     north_m, east_m = rotate_image_offset_to_ne(
@@ -555,6 +580,7 @@ def estimate_target_gps_from_reader(
     hfov_deg: float = DEFAULT_HFOV_DEG,
     vfov_deg: float = DEFAULT_VFOV_DEG,
     camera_yaw_offset_deg: float = DEFAULT_CAMERA_YAW_OFFSET_DEG,
+    camera_pitch_deg: float = DEFAULT_CAMERA_PITCH_DEG,
 
     # GPS 故障時的「保留懸念」：
     # 可傳手動替代值；不傳則 GPS 無效時回傳 None
@@ -611,6 +637,7 @@ def estimate_target_gps_from_reader(
         hfov_deg=hfov_deg,
         vfov_deg=vfov_deg,
         camera_yaw_offset_deg=camera_yaw_offset_deg,
+        camera_pitch_deg=camera_pitch_deg,
     )
 
     result["source"] = source
@@ -634,7 +661,7 @@ if __name__ == "__main__":
         image_height=1080,
 
         # 你目前手動輸入的高度
-        altitude_agl_m=70.0,
+        altitude_agl_m=DEFAULT_ALTITUDE_AGL_M,
 
         # 假 GPS
         drone_lat=25.0330,

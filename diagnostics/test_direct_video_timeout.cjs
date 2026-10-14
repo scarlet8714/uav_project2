@@ -1,4 +1,4 @@
-// Run: node --test diagnostics/test_direct_video_timeout.cjs
+// Run: node rtsp_yolo_direct/test_browser.cjs
 // Execute the actual browser script with a fake clock, video, and WebRTC peer.
 // Video stalls must wait for recovery; connection failures still reconnect.
 const assert = require('node:assert/strict');
@@ -8,15 +8,24 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '../rtsp_yolo_direct/web.py'), 'utf8');
-const script = source.split('<script>')[1].split('</script>')[0].replace(/connect\(\);\s*$/, '');
+const scriptTemplate = source.split('<script>')[1].split('</script>')[0]
+  .replace(/connect\(\);\s*$/, '');
 
-async function browser({frameCallbacks = true} = {}) {
+async function browser({frameCallbacks = true, candidateType = 'host', icePolicy = 'all', autoOpen = true,
+                        socketConstructorFails = false} = {}) {
+  const iceServers = [{urls: 'turn:example.test:3478?transport=udp', username: 'test', credential: 'dummy'}];
+  if (icePolicy === 'all') iceServers.unshift({urls: 'stun:104.155.197.179:3478'});
+  const script = scriptTemplate.replace('__TURN_ICE_CONFIGURATION__',
+    JSON.stringify({iceServers, iceTransportPolicy: icePolicy}));
   let now = 0, frameCallback = null, nextTimerId = 1;
   let rtspConnected = true;
+  let healthPeers = [{id: 'test'}], healthResponse = null, offerCount = 0;
+  let drawCount = 0;
   const timers = new Map(), intervals = [], listeners = {}, peers = [], sockets = [];
-  const drawing = new Proxy({}, {get: () => () => {}});
+  const drawing = new Proxy({}, {get: (_, key) => key === 'measureText'
+    ? text => ({width: text.length * 10}) : () => {if (key === 'strokeRect') drawCount++;}});
   const elements = new Map();
-  for (const id of ['video', 'overlay', 'status', 'transport', 'capture', 'message']) {
+  for (const id of ['video', 'overlay', 'status', 'transport', 'metadata', 'icepath']) {
     elements.set(id, {textContent: '', getContext: () => drawing});
   }
   const video = elements.get('video');
@@ -29,12 +38,14 @@ async function browser({frameCallbacks = true} = {}) {
     addEventListener: (event, fn) => {listeners[event] = fn;},
   };
   class Peer {
-    constructor() {
+    constructor(configuration) {
+      this.configuration = configuration;
       this.connectionState = 'new'; this.iceGatheringState = 'complete';
       this.decoded = 0; this.packets = 0; peers.push(this);
     }
     addTransceiver() {}
-    async createOffer() {return {sdp: 'offer', type: 'offer'};}
+    async createOffer() {return {sdp: candidateType
+      ? `a=candidate:1 1 udp 1 203.0.113.1 50000 typ ${candidateType}\r\n` : 'offer', type: 'offer'};}
     async setLocalDescription(description) {this.localDescription = description;}
     async setRemoteDescription() {
       this.connectionState = 'connected'; this.onconnectionstatechange();
@@ -47,11 +58,15 @@ async function browser({frameCallbacks = true} = {}) {
     close() {this.connectionState = 'closed';}
   }
   const context = vm.createContext({
-    document, window: {addEventListener: () => {}},
+    document, window: {addEventListener: (name, fn) => {listeners[name] = fn;}},
     performance: {now: () => now}, RTCPeerConnection: Peer,
     WebSocket: class {
-      constructor() {sockets.push(this);}
-      close() {}
+      constructor(url) {
+        if (socketConstructorFails) throw Error('WebSocket constructor failed');
+        this.url = url; this.closed = false; sockets.push(this);
+        if (autoOpen) Promise.resolve().then(() => {if (!this.closed) this.onopen?.();});
+      }
+      close() {this.closed = true;}
     }, AbortController,
     location: {protocol: 'http:', host: 'localhost'},
     setInterval: (fn, delay) => {intervals.push({fn, delay});},
@@ -59,9 +74,15 @@ async function browser({frameCallbacks = true} = {}) {
       const id = nextTimerId++; timers.set(id, {fn, delay}); return id;
     },
     clearTimeout: id => timers.delete(id),
-    fetch: async url => ({ok: true, json: async () => url === '/offer'
-      ? {sdp: 'answer', type: 'answer', generation: 1, peerId: 'test'}
-      : {rtsp: {connected: rtspConnected}}}),
+    fetch: async url => {
+      if (url === '/offer') {
+        offerCount++;
+        return {ok: true, json: async () =>
+          ({sdp: 'answer', type: 'answer', generation: 1, peerId: 'test'})};
+      }
+      return healthResponse || {ok: true, json: async () =>
+        ({rtsp: {connected: rtspConnected}, peers: healthPeers})};
+    },
   });
   vm.runInContext(script, context);
   await vm.runInContext('connect()', context);
@@ -69,6 +90,14 @@ async function browser({frameCallbacks = true} = {}) {
   const healthPoll = intervals.find(item => item.delay === 2000).fn;
   return {
     peers, sockets, timers, context, document, elements,
+    offerCount: () => offerCount,
+    drawCount: () => drawCount,
+    state: () => JSON.parse(vm.runInContext('JSON.stringify({origin, generation, detections, videoPts})', context)),
+    message: (ws, data) => ws.onmessage({data: JSON.stringify(data)}),
+    setAutoOpen: value => {autoOpen = value;},
+    setHealthPeers: value => {healthPeers = value;},
+    setHealthResponse: value => {healthResponse = value;},
+    pagehide: () => listeners.pagehide(),
     pollAt: async time => {now = time; await poll();},
     healthAt: async (time, connected) => {
       now = time; rtspConnected = connected; await healthPoll();
@@ -76,7 +105,7 @@ async function browser({frameCallbacks = true} = {}) {
     peerState: state => {
       const pc = peers.at(-1); pc.connectionState = state; pc.onconnectionstatechange();
     },
-    frameAt: time => {now = time; frameCallback(time, {rtpTimestamp: 1});},
+    frameAt: (time, rtpTimestamp = 1) => {now = time; frameCallback(time, {rtpTimestamp});},
     visibleAt: time => {
       now = time; document.hidden = false; listeners.visibilitychange?.();
     },
@@ -188,16 +217,166 @@ test('closed WebRTC connections still reconnect', async () => {
   assert.equal(b.timers.size, 1);
 });
 
-test('metadata closure still reconnects and late old socket events are ignored', async () => {
+test('metadata closure reconnects only the socket and preserves video timing and history', async () => {
+  const b = await browser();
+  const oldSocket = b.sockets[0];
+  b.message(oldSocket, {type: 'origin', rtpOrigin: 1000});
+  b.message(oldSocket, detection(1));
+  b.frameAt(1000, 91000);
+  const before = b.state();
+  oldSocket.onclose();
+  assert.match(b.elements.get('metadata').textContent, /1 秒後重試/);
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.deepEqual(b.state(), before);
+  assert.equal(b.timers.size, 1);
+  b.frameAt(1100, 100000);
+  assert.equal(b.drawCount(), 2);
+  await b.retry();
+  assert.equal(b.sockets.length, 2);
+  assert.equal(b.sockets[1].url, oldSocket.url);
+  assert.equal(b.peers.length, 1);
+  assert.equal(b.offerCount(), 1);
+  oldSocket.onclose(); oldSocket.onopen();
+  b.message(oldSocket, {type: 'origin', rtpOrigin: 9999});
+  b.message(oldSocket, detection(99));
+  assert.equal(b.state().origin, 1000);
+  assert.equal(b.state().detections.length, 1);
+  assert.equal(b.timers.size, 0);
+  b.message(b.sockets[1], detection(1.2));
+  b.frameAt(1200, 109000);
+  assert.equal(b.drawCount(), 3);
+  assert.match(b.elements.get('metadata').textContent, /已連線/);
+});
+
+function detection(ptsSeconds, generation = 1) {
+  return {type: 'detection', generation, ptsSeconds, width: 960, height: 544,
+    boxes: [{label: 'car', x1: 10, y1: 10, x2: 50, y2: 50}]};
+}
+
+test('metadata retries use independent 1, 2, 4, 8 second backoff without video offers', async () => {
+  const b = await browser();
+  b.setAutoOpen(false);
+  for (const delay of [1000, 2000, 4000, 8000, 8000]) {
+    const ws = b.sockets.at(-1);
+    ws.onerror(); ws.onclose();
+    assert.equal(b.timers.size, 1);
+    assert.equal([...b.timers.values()][0].delay, delay);
+    await b.retry();
+    assert.equal(b.peers.length, 1);
+    assert.equal(b.peers[0].connectionState, 'connected');
+  }
+  b.sockets.at(-1).onopen(); b.sockets.at(-1).onclose();
+  assert.equal([...b.timers.values()][0].delay, 1000);
+  assert.equal(b.offerCount(), 1);
+});
+
+test('hung metadata handshake retries after 10 seconds without closing video', async () => {
+  const b = await browser({autoOpen: false});
+  assert.equal([...b.timers.values()][0].delay, 10000);
+  await b.retry();
+  assert.equal(b.sockets[0].closed, true);
+  assert.equal([...b.timers.values()][0].delay, 1000);
+  assert.equal(b.peers[0].connectionState, 'connected');
+});
+
+test('WebSocket construction errors do not cause new video offers', async () => {
+  const b = await browser({socketConstructorFails: true});
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.equal(b.sockets.length, 0);
+  assert.equal([...b.timers.values()][0].delay, 1000);
+  await b.retry();
+  assert.equal([...b.timers.values()][0].delay, 2000);
+  assert.equal(b.offerCount(), 1);
+});
+
+test('metadata outage hides expired boxes while new frames continue on the same peer', async () => {
+  const b = await browser();
+  b.message(b.sockets[0], {type: 'origin', rtpOrigin: 1000});
+  b.message(b.sockets[0], detection(1));
+  b.frameAt(1000, 91000);
+  assert.equal(b.drawCount(), 1);
+  b.sockets[0].onclose();
+  b.frameAt(2100, 190000);
+  assert.equal(b.drawCount(), 1);
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.equal(b.state().detections.length, 1);
+});
+
+test('video failure cancels metadata retries and ignores late old messages', async () => {
   const b = await browser();
   const oldSocket = b.sockets[0];
   oldSocket.onclose();
-  assert.match(b.reason(), /metadata connection closed/);
+  b.peerState('failed');
+  assert.equal(b.timers.size, 1);
+  await b.retry();
+  assert.equal(b.peers.length, 2);
+  oldSocket.onclose(); oldSocket.onerror();
+  b.message(oldSocket, {type: 'origin', rtpOrigin: 1000});
+  b.message(oldSocket, detection(10));
+  assert.equal(b.state().origin, null);
+  assert.deepEqual(b.state().detections, []);
+  assert.equal(b.timers.size, 0);
+});
+
+test('leaving the page cancels metadata and video retries and ignores late socket events', async () => {
+  for (const autoOpen of [true, false]) {
+    const b = await browser({autoOpen});
+    if (autoOpen) b.sockets[0].onclose();
+    const lateTimer = [...b.timers.values()][0].fn;
+    b.pagehide();
+    assert.equal(b.timers.size, 0);
+    lateTimer();
+    b.sockets[0].onclose(); b.sockets[0].onopen();
+    assert.equal(b.sockets.length, 1);
+    assert.equal(b.timers.size, 0);
+    assert.equal(b.peers[0].connectionState, 'closed');
+  }
+});
+
+test('confirmed missing backend peer rebuilds video after a server restart', async () => {
+  const b = await browser();
+  b.sockets[0].onclose();
+  b.setHealthPeers([]);
+  await b.healthAt(2000, true);
+  assert.match(b.reason(), /viewer session no longer exists/);
   assert.equal(b.peers[0].connectionState, 'closed');
   assert.equal(b.timers.size, 1);
-  await b.retry(); oldSocket.onclose();
+  await b.retry();
+  assert.equal(b.offerCount(), 2);
+});
+
+test('health request failures and unknown peer lists do not rebuild video', async () => {
+  const b = await browser();
+  b.setHealthResponse({ok: false});
+  await b.healthAt(2000, true);
+  b.setHealthResponse(null); b.setHealthPeers(undefined);
+  await b.healthAt(4000, true);
+  assert.equal(b.peers[0].connectionState, 'connected');
+  assert.equal(b.timers.size, 0);
+});
+
+test('late health results from an old peer cannot close the new video peer', async () => {
+  const b = await browser();
+  let finish;
+  b.setHealthResponse({ok: true, json: () => new Promise(resolve => {finish = resolve;})});
+  const pending = b.healthAt(1000, true);
+  for (let i = 0; i < 5; i++) await Promise.resolve();
+  b.peerState('failed'); await b.retry();
+  finish({rtsp: {connected: true}, peers: []}); await pending;
   assert.equal(b.peers[1].connectionState, 'connected');
   assert.equal(b.timers.size, 0);
+});
+
+test('invalid metadata and other generations do not corrupt video timing or overlays', async () => {
+  const b = await browser();
+  b.message(b.sockets[0], {type: 'origin', rtpOrigin: 1000});
+  b.sockets[0].onmessage({data: 'invalid json'});
+  b.message(b.sockets[0], null);
+  b.message(b.sockets[0], {type: 'origin', rtpOrigin: 'not a timestamp'});
+  b.message(b.sockets[0], detection(1, 2));
+  assert.equal(b.state().origin, 1000);
+  assert.deepEqual(b.state().detections, []);
+  assert.equal(b.peers[0].connectionState, 'connected');
 });
 
 test('unhealthy RTSP still reconnects without waiting for a video timeout', async () => {
@@ -238,3 +417,60 @@ test('late stats results from an old peer cannot update the new connection', asy
   b.peerState('failed');
   assert.equal([...b.timers.values()][0].delay, 1000);
 });
+
+  test('browser offers STUN and TURN with all ICE policy', async () => {
+    const b = await browser();
+    const config = b.peers[0].configuration;
+    assert.equal(config.iceTransportPolicy, 'all');
+    assert.equal(config.iceServers.length, 2);
+    assert.equal(config.iceServers[0].urls, 'stun:104.155.197.179:3478');
+    assert.equal(config.iceServers[1].urls, 'turn:example.test:3478?transport=udp');
+    assert.equal(config.iceServers[1].credential, 'dummy');
+  });
+  test('host and STUN candidates can connect without relay allocation', async () => {
+    for (const candidateType of ['host', 'srflx', 'prflx']) {
+      const b = await browser({candidateType});
+      assert.equal(b.peers[0].connectionState, 'connected');
+      assert.equal(b.offerCount(), 1);
+      assert.equal(b.sockets.length, 1);
+      assert.equal(b.timers.size, 0);
+    }
+  });
+  test('TURN-only candidates still connect under all ICE policy', async () => {
+    const b = await browser({candidateType: 'relay'});
+    assert.equal(b.peers[0].connectionState, 'connected');
+    assert.equal(b.offerCount(), 1);
+  });
+  test('empty ICE candidates fail clearly and retry', async () => {
+    const b = await browser({candidateType: null});
+    assert.equal(b.peers[0].connectionState, 'closed');
+    assert.equal(b.offerCount(), 0);
+    assert.match(b.reason(), /ICE gathering failed/);
+    assert.equal(b.timers.size, 1);
+  });
+  test('relay mode keeps relay-only ICE with TURN credentials', async () => {
+    const b = await browser({icePolicy: 'relay', candidateType: 'relay'});
+    const config = b.peers[0].configuration;
+    assert.equal(config.iceTransportPolicy, 'relay');
+    assert.equal(config.iceServers.length, 1);
+    assert.equal(config.iceServers[0].urls, 'turn:example.test:3478?transport=udp');
+    assert.equal(config.iceServers[0].credential, 'dummy');
+  });
+  test('missing TURN candidates fail clearly and retry instead of connecting directly', async () => {
+    const b = await browser({icePolicy: 'relay', candidateType: 'host'});
+    assert.equal(b.peers[0].connectionState, 'closed');
+    assert.equal(b.sockets.length, 0);
+    assert.match(b.reason(), /TURN allocation failed/);
+    assert.equal(b.timers.size, 1);
+  });
+  test('selected direct and mixed TURN paths appear in the UI', async () => {
+    const b = await browser();
+    b.setHealthPeers([{id: 'test', ice_pair: {path: 'direct', local_type: 'srflx', remote_type: 'host'}}]);
+    await b.healthAt(2000, true);
+    assert.match(b.elements.get('icepath').textContent, /直連.*srflx\/host/);
+    b.setHealthPeers([{id: 'test', ice_pair: {path: 'turn', local_type: 'host', remote_type: 'relay'}}]);
+    await b.healthAt(4000, true);
+    assert.match(b.elements.get('icepath').textContent, /TURN 中繼.*host\/relay/);
+    b.peerState('failed');
+    assert.equal(b.elements.get('icepath').textContent, '影像路徑等待連線');
+  });

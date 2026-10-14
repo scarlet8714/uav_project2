@@ -17,6 +17,7 @@ from rtsp_yolo_direct.diagnostics import format_status
 from rtsp_yolo_direct.inference import InferenceWorker
 from rtsp_yolo_direct.source import EncodedTrack, RtspSource
 from rtsp_yolo_direct import server
+from rtsp_yolo_direct.turn import TurnSettings
 
 
 class Log:
@@ -38,7 +39,8 @@ def make_app():
     source.new_track = lambda: EncodedTrack(source)
     return {"source": source, "inference": SimpleNamespace(status=lambda: yolo),
             "config": SimpleNamespace(model_path="test2.engine", tracker="legacy",
-                                      transport="udp", playout_delay_ms=150, rtsp_timeout=5),
+                                      transport="udp", playout_delay_ms=150, rtsp_timeout=8,
+                                      turn=TurnSettings("turn:example.test:3478?transport=udp", "test", "secret")),
             "peers": {}, "recent_peer_closures": deque(maxlen=16), "log": Log(),
             "offer_lock": asyncio.Lock()}
 
@@ -109,6 +111,9 @@ class PeerStatusTests(unittest.IsolatedAsyncioTestCase):
             connectionState = "connected"
             iceConnectionState = "completed"
 
+            def __init__(self, configuration):
+                self.configuration = configuration
+
             def on(self, event):
                 return lambda fn: fn
 
@@ -132,7 +137,10 @@ class PeerStatusTests(unittest.IsolatedAsyncioTestCase):
             return {"sdp": "offer", "type": "offer"}
 
         request = SimpleNamespace(app=self.app, remote="test-client", json=params)
-        with patch.object(server, "RTCPeerConnection", Peer), patch.object(server, "preferences", return_value=[]):
+        with patch.object(server, "RTCPeerConnection", Peer), \
+                patch.object(server, "preferences", return_value=[]), \
+                patch.object(server, "configure_ice", return_value=None), \
+                patch.object(server, "require_ice_candidates"):
             response = await server.offer(request)
         self.peer_id = json.loads(response.text)["peerId"]
         self.peer = self.app["peers"][self.peer_id]

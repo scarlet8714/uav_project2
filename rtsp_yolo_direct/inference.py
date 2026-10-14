@@ -1,14 +1,12 @@
-"""YOLO, temporal confirmation, GPS projection, and image capture."""
+"""YOLO, temporal confirmation, and GPS projection."""
 
 import math
 import queue
 import threading
 import time
 
-import cv2
 from ultralytics import YOLO
 
-from .capture import FrameCapture
 from .gps import GPSReader, estimate_target_gps
 
 
@@ -50,7 +48,7 @@ class TargetTracker:
 
 
 class InferenceWorker:
-    def __init__(self, config, loop, on_result, on_event, capture_dir):
+    def __init__(self, config, loop, on_result, on_event):
         self.config = config
         self.loop = loop
         self.on_result = on_result
@@ -59,7 +57,6 @@ class InferenceWorker:
         self.gps = GPSReader(port=config.gps_port, baudrate=config.gps_baudrate)
         if not config.no_gps:
             self.gps.start()
-        self.capture = FrameCapture(output_dir=capture_dir)
         if config.tracker == "bytetrack":
             from .byte_tracking import ByteTargetTracker
             self.tracker = ByteTargetTracker(buffer=config.bytetrack_buffer)
@@ -149,30 +146,22 @@ class InferenceWorker:
         for box in boxes:
             if gps_status != "valid" or not box["confirmed"]:
                 continue
-            target = estimate_target_gps(
-                target_x=box["center_x"], target_y=box["center_y"],
-                image_width=width, image_height=height,
-                altitude_agl_m=self.config.altitude_agl_m,
-                drone_lat=gps.latitude, drone_lon=gps.longitude,
-                course_deg=gps.course_deg,
-                hfov_deg=self.config.hfov_deg,
-                vfov_deg=self.config.vfov_deg,
-                camera_yaw_offset_deg=self.config.camera_yaw_offset_deg)
+            try:
+                target = estimate_target_gps(
+                    target_x=box["center_x"], target_y=box["center_y"],
+                    image_width=width, image_height=height,
+                    altitude_agl_m=self.config.altitude_agl_m,
+                    drone_lat=gps.latitude, drone_lon=gps.longitude,
+                    course_deg=gps.course_deg,
+                    hfov_deg=self.config.hfov_deg,
+                    vfov_deg=self.config.vfov_deg,
+                    camera_yaw_offset_deg=self.config.camera_yaw_offset_deg,
+                    camera_pitch_deg=self.config.camera_pitch_deg)
+            except ValueError:
+                # A sky/horizon ray has no ground GPS; keep the detection box.
+                continue
             box["target_lat"] = target["target_lat"]
             box["target_lon"] = target["target_lon"]
-        if self.capture.pending:
-            annotated = image.copy()
-            for box in boxes:
-                color = (0, 255, 0) if box["confirmed"] else (0, 255, 255)
-                cv2.rectangle(annotated, (int(box["x1"]), int(box["y1"])),
-                              (int(box["x2"]), int(box["y2"])), color, 2)
-                label = f"{box['label']} {box['confidence']:.2f}"
-                if "target_lat" in box:
-                    label += f" {box['target_lat']:.7f},{box['target_lon']:.7f}"
-                cv2.putText(annotated, label,
-                            (int(box["x1"]), max(20, int(box["y1"])-5)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-            self.capture.submit(annotated)
         self.processed_frames += 1
         completed_at = time.monotonic()
         self.last_inference_ms = round((completed_at-started)*1000, 1)
@@ -207,10 +196,6 @@ class InferenceWorker:
             except Exception as exc:
                 self.last_error = repr(exc)
                 self.on_event("yolo_error", error=self.last_error)
-
-    def request_capture(self):
-        return self.capture.request({"exposure": "RTSP", "resolution": "source",
-                                     "fps": "source"})
 
     def status(self):
         age = None if self.last_result_at is None else time.monotonic()-self.last_result_at
@@ -247,4 +232,3 @@ class InferenceWorker:
             pass
         self.thread.join(timeout=3)
         self.gps.stop()
-        self.capture.close()
